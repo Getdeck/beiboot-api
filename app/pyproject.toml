@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "api"
-version = "0.0.0"
+version = "0.1.0"
 description = ""
 authors = ["Christian Busch <christian@blueshoe.io>"]
 
@@ -10,6 +10,8 @@ fastapi = "^0.88.0"
 uvicorn = "^0.20.0"
 pydantic = "^1.10.2"
 sentry-sdk = {extras = ["fastapi"], version = "^1.11.1"}
+kubernetes = "<24.0.0"
+beiboot = "^1.1.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.12.0"
