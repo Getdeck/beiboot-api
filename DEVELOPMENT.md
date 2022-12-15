@@ -23,6 +23,13 @@ Assuming you have Minikube installed, please run the following on your terminal:
    ```bash
    minikube start --cpus=max --memory=4000 --driver=docker --embed-certs --addons=default-storageclass storage-provisioner
    ```
+
+   Alternatively you can use k3d:
+
+   ```bash
+   k3d cluster create beiboot-api --agents 1 -p 8080:80@agent:0 -p 31820:31820/UDP@agent:0
+   ```
+
 2) The `kubectl` context will be set automatically to this cluster (please check it anyway)
 3) Create the `getdeck` namespace: `kubectl create ns getdeck`.
 4) Install the Beiboot Operator to this cluster:
@@ -57,6 +64,8 @@ If used together with Minikube, please follow these steps:
    ```bash
    gefyra up --minikube
    ```
+
+   :exclamation: If you are using a k3d cluster, omit the `--minikube` option.
 2) Start a container image locally with (working dir is _beiboot-api/app/_):
    ```bash
    gefyra run -i beiboot-api -n getdeck -N beiboot-api -v $(pwd)/src:/app -c "/bin/sh -c 'while sleep 1000; do :; done'" --expose localhost:8001:8000 --detach
