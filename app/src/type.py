@@ -1,5 +1,5 @@
 from pydantic import BaseModel
 
 
-class ClusterData(BaseModel):
-    pass
+class ClusterCreateData(BaseModel):
+    name: str = "beiboot"

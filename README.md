@@ -5,6 +5,7 @@ WIP
 ## development
 
 ```bash
+poetry export -f requirements.txt --output requirements.dev.txt --without-hashes --with dev
 devcontainer build --no-cache --image-name "beiboot-api:devcontainer" "."
 ```
 
