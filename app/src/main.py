@@ -1,14 +1,16 @@
 import logging
-from uuid import UUID
 
+import kubernetes as k8s
+from beiboot import api
+from beiboot.configuration import ClientConfiguration
+from beiboot.types import BeibootParameters, BeibootRequest
 from config import settings
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from sentry import sentry_setup
-from type import ClusterData
-import kubernetes as k8s
+from type import ClusterCreateData
 
-# sentry_setup(dns=settings.sentry_dsn, environment=settings.sentry_environment)
+sentry_setup(dsn=settings.sentry_dsn, environment=settings.sentry_environment)
 
 logger = logging.getLogger("beiboot")
 logger.info("Beiboot REST API startup")
@@ -18,7 +20,7 @@ try:
     logger.info("Loaded in-cluster config")
 except k8s.config.ConfigException:
     # if the api is executed locally, expecting a "kubeconfig.yaml"
-    k8s.config.load_kube_config(config_file="/app/kubeconfig.yaml")
+    k8s.config.load_kube_config(config_file=settings.config_file_location)
     logger.info("Loaded KUBECONFIG config")
 
 app = FastAPI()
@@ -35,14 +37,44 @@ async def trigger_error():
 
 
 @app.post("/cluster/")
-async def cluster_create(data: ClusterData):
-    print(data)
+async def cluster_create(data: ClusterCreateData):
+    config = ClientConfiguration(kube_config_file=settings.config_file_location)
+
+    req = BeibootRequest(
+        name=data.name,
+        parameters=BeibootParameters(
+            nodes=1,
+            serverStorageRequests="500Mi",
+            serverResources={"requests": {"cpu": "0.25", "memory": "0.25Gi"}},
+            nodeResources={"requests": {"cpu": "0.25", "memory": "0.25Gi"}},
+        ),
+    )
+    beiboot = api.create(req=req, config=config)
+
+    response = JSONResponse(content={"state": beiboot.state})
+    return response
+
+
+@app.delete("/cluster/{name}")
+async def cluster_delete(name: str):
     response = JSONResponse(content={})
     return response
 
 
-@app.delete("/cluster/{uuid}")
-async def cluster_delete(uuid: UUID):
-    print(uuid)
+@app.get("/cluster/{name}/state")
+async def cluster_state(name: str):
+    beiboot = api.read(name)
+    response = JSONResponse(content={"state": beiboot.state})
+    return response
+
+
+@app.get("/cluster/{name}/kubeconfig")
+async def cluster_kubeconfig(name: str):
+    response = JSONResponse(content={})
+    return response
+
+
+@app.get("/cluster/{name}/mtls")
+async def cluster_mtls(name: str):
     response = JSONResponse(content={})
     return response
