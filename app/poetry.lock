@@ -41,14 +41,14 @@ tests-no-zope = ["cloudpickle", "coverage[toml] (>=5.0.2)", "hypothesis", "mypy 
 
 [[package]]
 name = "beiboot"
-version = "1.1.0"
+version = "1.1.1"
 description = "Getdeck Beiboot client project."
 category = "main"
 optional = false
 python-versions = ">=3.9,<4.0"
 files = [
-    {file = "beiboot-1.1.0-py3-none-any.whl", hash = "sha256:737801dc4e06647db80b7a6d54d255e0af678e5431b232fa6e9754c0dbd0cb71"},
-    {file = "beiboot-1.1.0.tar.gz", hash = "sha256:fb0500ab9f9011b3456845286f5eec8d0a9c840c85bedb6acfcc25537247f3d3"},
+    {file = "beiboot-1.1.1-py3-none-any.whl", hash = "sha256:932c854d8358a26c4df2d21369e5c8ca99d6756763511fce2fc7b1dfd6bcc0bf"},
+    {file = "beiboot-1.1.1.tar.gz", hash = "sha256:c8428c6d689ab1a9f8e8a2dfddaee5008a3266be3910428b250bda67bef94cc1"},
 ]
 
 [package.dependencies]
@@ -966,4 +966,4 @@ test = ["websockets"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "a107ec56802f3284a5c3cdd3a5850467b54b43b71cca947414c2cd6d71dfc223"
+content-hash = "ddd6133c5fe69b2c659d3ea0abc971db9bc4bc957398c0dff4f2b1142fb72c57"

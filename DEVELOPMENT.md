@@ -83,7 +83,7 @@ If used together with Minikube, please follow these steps:
    > docker exec -it beiboot-api bash
    > uvicorn main:app --host 0.0.0.0 --reload
    ```
-5) Find the output on [http://localhost:8001](http://localhost:8001)
+5) Find the output on [http://localhost:8001](http://localhost:8001)  
    **Important:** This process is now connected to the Kubernetes API.
 6) Do the development work!
 7) You can remove/restart the container with:
