@@ -1,8 +1,6 @@
 # base
 FROM python:3.10-slim AS base
 
-ARG PANDOC_VERSION=2.18-1-amd64
-
 RUN apt-get update && apt-get upgrade -y \
     && apt-get install --no-install-recommends -y \
         curl git python3-pip libpango-1.0-0 libharfbuzz0b libpangoft2-1.0-0 \

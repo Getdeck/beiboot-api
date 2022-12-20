@@ -2,7 +2,6 @@ import logging
 
 import kubernetes as k8s
 from beiboot import api
-from beiboot.configuration import ClientConfiguration
 from beiboot.types import BeibootParameters, BeibootRequest
 from config import settings
 from fastapi import FastAPI
@@ -38,8 +37,6 @@ async def trigger_error():
 
 @app.post("/cluster/")
 async def cluster_create(data: ClusterCreateData):
-    config = ClientConfiguration(kube_config_file=settings.config_file_location)
-
     req = BeibootRequest(
         name=data.name,
         parameters=BeibootParameters(
@@ -49,7 +46,7 @@ async def cluster_create(data: ClusterCreateData):
             nodeResources={"requests": {"cpu": "0.25", "memory": "0.25Gi"}},
         ),
     )
-    beiboot = api.create(req=req, config=config)
+    beiboot = api.create(req=req)
 
     response = JSONResponse(content={"state": beiboot.state})
     return response
