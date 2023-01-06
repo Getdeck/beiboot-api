@@ -38,7 +38,7 @@ Assuming you have Minikube installed, please run the following on your terminal:
    ```
 5) Store the Minikube _kubeconfig_ for later use in an application container with (working dir is _beiboot-api/app/_):
    ```bash
-   kubectl config view --flatten --minify > src/kubeconfig.yaml
+   kubectl config view --flatten --minify > api/kubeconfig.yaml
    ```
 
 You can delete the Minikube cluster with `minikube delete`. Please find the Minikube docs for further assistance above.
@@ -68,7 +68,7 @@ If used together with Minikube, please follow these steps:
    :exclamation: If you are using a k3d cluster, omit the `--minikube` option.
 2) Start a container image locally with (working dir is _beiboot-api/app/_):
    ```bash
-   gefyra run -i beiboot-api -n getdeck -N beiboot-api -v $(pwd)/src:/app -c "/bin/sh -c 'while sleep 1000; do :; done'" --expose localhost:8001:8000 --detach
+   gefyra run -i beiboot-api -n getdeck -N beiboot-api -v $(pwd)/:/app -c "/bin/sh -c 'while sleep 1000; do :; done'" --expose localhost:8001:8000 --detach
    ```
    **Important:** Please keep in mind, that you also mount the _kubeconfig.yaml_ for the Minikube cluster. It is needed to make the application able to talk to the Kubernetes API.
 
