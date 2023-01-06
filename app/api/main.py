@@ -1,12 +1,13 @@
 import logging
 from uuid import UUID
 
-from config import settings
+import kubernetes as k8s
+import uvicorn
+from api.config import settings
+from api.sentry import sentry_setup
+from api.type import ClusterData
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
-from sentry import sentry_setup
-from type import ClusterData
-import kubernetes as k8s
 
 # sentry_setup(dns=settings.sentry_dsn, environment=settings.sentry_environment)
 
@@ -46,3 +47,7 @@ async def cluster_delete(uuid: UUID):
     print(uuid)
     response = JSONResponse(content={})
     return response
+
+
+def start():
+    uvicorn.run(app, host="0.0.0.0", port=8080, reload=True)
