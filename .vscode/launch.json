@@ -4,12 +4,13 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        
         {
             "name": "Python: FastAPI",
             "type": "python",
             "request": "launch",
             "module": "uvicorn",
-            "cwd": "${workspaceFolder}/app/src",
+            "cwd": "${workspaceFolder}/app/api",
             "args": [
                 "main:app",
                 "--host",

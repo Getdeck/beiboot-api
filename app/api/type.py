@@ -2,4 +2,8 @@ from pydantic import BaseModel
 
 
 class ClusterData(BaseModel):
-    pass
+    name: str
+
+
+class BeibootResponse(BaseModel):
+    state: str

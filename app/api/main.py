@@ -9,6 +9,9 @@ from api.type import ClusterData
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
+from beiboot import api
+from beiboot.types import BeibootRequest, BeibootParameters
+
 # sentry_setup(dns=settings.sentry_dsn, environment=settings.sentry_environment)
 
 logger = logging.getLogger("beiboot")
@@ -19,7 +22,7 @@ try:
     logger.info("Loaded in-cluster config")
 except k8s.config.ConfigException:
     # if the api is executed locally, expecting a "kubeconfig.yaml"
-    k8s.config.load_kube_config(config_file="/app/kubeconfig.yaml")
+    k8s.config.load_kube_config(config_file="./kubeconfig.yaml")
     logger.info("Loaded KUBECONFIG config")
 
 app = FastAPI()
@@ -37,8 +40,17 @@ async def trigger_error():
 
 @app.post("/cluster/")
 async def cluster_create(data: ClusterData):
-    print(data)
-    response = JSONResponse(content={})
+    req = BeibootRequest(
+        name=data.name,
+        parameters=BeibootParameters(
+            nodes=1,
+            serverStorageRequests="500Mi",
+            serverResources={"requests": {"cpu": "0.25", "memory": "0.25Gi"}},
+            nodeResources={"requests": {"cpu": "0.25", "memory": "0.25Gi"}},
+        ),
+    )
+    beiboot = api.create(req=req)
+    response = JSONResponse(content={"state": str(beiboot.state)})
     return response
 
 
