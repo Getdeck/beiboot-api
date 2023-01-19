@@ -1,6 +1,7 @@
 import logging
 
 import sentry_sdk
+from importlib import metadata
 
 logger = logging.getLogger()
 
@@ -9,12 +10,7 @@ def sentry_setup(dsn: str, environment: str):
     if not dsn:
         return
 
-    try:
-        with open("version.txt", "r") as file:
-            release = file.read().rstrip()
-    except Exception as e:
-        logger.error(str(e))
-        release = "unknown"
+    release = metadata.version("beiboot_rest")
 
     sentry_sdk.init(
         dsn=dsn,
