@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "api"
+name = "beiboot_rest"
 version = "0.1.0"
 description = ""
 authors = ["Christian Busch <christian@blueshoe.io>"]

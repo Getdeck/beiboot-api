@@ -5,8 +5,8 @@ import kubernetes as k8s
 import uvicorn
 
 from fastapi import FastAPI
-from routers import clusters
-from sentry import sentry_setup
+from beiboot_rest.routers import clusters
+from beiboot_rest.sentry import sentry_setup
 
 # sentry_setup(dns=settings.sentry_dsn, environment=settings.sentry_environment)
 
