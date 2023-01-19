@@ -3,14 +3,10 @@ from uuid import UUID
 
 import kubernetes as k8s
 import uvicorn
-from api.config import settings
-from api.sentry import sentry_setup
-from api.type import ClusterData
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
 
-from beiboot import api
-from beiboot.types import BeibootRequest, BeibootParameters
+from fastapi import FastAPI
+from routers import clusters
+from sentry import sentry_setup
 
 # sentry_setup(dns=settings.sentry_dsn, environment=settings.sentry_environment)
 
@@ -38,28 +34,7 @@ async def trigger_error():
     _ = 1 / 0
 
 
-@app.post("/cluster/")
-async def cluster_create(data: ClusterData):
-    req = BeibootRequest(
-        name=data.name,
-        parameters=BeibootParameters(
-            nodes=1,
-            serverStorageRequests="500Mi",
-            serverResources={"requests": {"cpu": "0.25", "memory": "0.25Gi"}},
-            nodeResources={"requests": {"cpu": "0.25", "memory": "0.25Gi"}},
-        ),
-    )
-    beiboot = api.create(req=req)
-    response = JSONResponse(content={"state": str(beiboot.state)})
-    return response
-
-
-@app.delete("/cluster/{uuid}")
-async def cluster_delete(uuid: UUID):
-    print(uuid)
-    response = JSONResponse(content={})
-    return response
-
+app.include_router(clusters.router)
 
 def start():
     uvicorn.run(app, host="0.0.0.0", port=8080, reload=True)
