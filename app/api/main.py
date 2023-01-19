@@ -6,12 +6,12 @@ import kubernetes as k8s
 import uvicorn
 from api.config import settings
 from api.sentry import sentry_setup
-from api.type import BeibootResponse, ClusterData
+from api.type import BeibootRequest, BeibootResponse
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 
 from beiboot import api
-from beiboot.types import BeibootRequest, BeibootParameters
+from beiboot import types as bbt_dataclass
 
 # sentry_setup(dns=settings.sentry_dsn, environment=settings.sentry_environment)
 
@@ -50,16 +50,14 @@ async def cluster_list() -> List[BeibootResponse]:
 
 
 @app.post("/cluster/", response_model=BeibootResponse)
-async def cluster_create(data: ClusterData) -> BeibootResponse:
-    req = BeibootRequest(
-        name=data.name,
-        parameters=BeibootParameters(
-            nodes=1,
-            serverStorageRequests="500Mi",
-            serverResources={"requests": {"cpu": "0.25", "memory": "0.25Gi"}},
-            nodeResources={"requests": {"cpu": "0.25", "memory": "0.25Gi"}},
-        ),
+async def cluster_create(beiboot_request: BeibootRequest) -> BeibootResponse:
+    req = bbt_dataclass.BeibootRequest(
+        name=beiboot_request.name,
+        provider=bbt_dataclass.BeibootProvider(beiboot_request.provider),
+        parameters=bbt_dataclass.BeibootParameters(**beiboot_request.parameters.dict()),
+        labels=beiboot_request.labels,
     )
+
     beiboot = api.create(req=req)
     response = BeibootResponse(name=beiboot.name, state=beiboot.state)
     return response
@@ -80,13 +78,15 @@ async def cluster_state(name: str) -> BeibootResponse:
 
 @app.get("/cluster/{name}/kubeconfig")
 async def cluster_kubeconfig(name: str):
-    response = JSONResponse(content={})
+    beiboot = api.read(name=name)
+    response = JSONResponse(content={"kubeconfig": beiboot.kubeconfig})
     return response
 
 
 @app.get("/cluster/{name}/mtls")
 async def cluster_mtls(name: str):
-    response = JSONResponse(content={})
+    beiboot = api.read(name=name)
+    response = JSONResponse(content=beiboot.mtls_files)
     return response
 
 
