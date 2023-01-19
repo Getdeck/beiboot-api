@@ -10,7 +10,7 @@ from sentry import sentry_setup
 
 # sentry_setup(dns=settings.sentry_dsn, environment=settings.sentry_environment)
 
-logger = logging.getLogger("beiboot")
+logger = logging.getLogger("uvicorn.beiboot")
 logger.info("Beiboot REST API startup")
 
 try:
