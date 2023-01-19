@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from beiboot.types import BeibootState
 
 
 class ClusterData(BaseModel):
@@ -6,4 +7,5 @@ class ClusterData(BaseModel):
 
 
 class BeibootResponse(BaseModel):
-    state: str
+    name: str
+    state: BeibootState

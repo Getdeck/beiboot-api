@@ -11,7 +11,7 @@ uvicorn = "^0.20.0"
 pydantic = "^1.10.2"
 sentry-sdk = {extras = ["fastapi"], version = "^1.11.1"}
 kubernetes = "<24.0.0"
-beiboot = "^1.2.0"
+beiboot = "^1.1.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^22.12.0"
