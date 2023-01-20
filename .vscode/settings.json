@@ -5,6 +5,6 @@
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.analysis.extraPaths": [
-        "./app/src"
+        "./app/beiboot_rest"
     ]
 }
