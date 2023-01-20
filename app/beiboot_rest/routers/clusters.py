@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, Header, Request
 from fastapi.responses import JSONResponse
 from beiboot import api
 from beiboot.types import BeibootRequest
@@ -10,11 +10,16 @@ from fastapi.responses import JSONResponse
 from beiboot import api
 from beiboot import types as bbt_dataclass
 
-router = APIRouter(prefix="/clusters", tags=["clusters"])
+
+def user_headers(user_id: str | None = Header(default="default")):
+    return {"user_id": user_id}
+
+
+router = APIRouter(prefix="/clusters", tags=["clusters"], dependencies=[Depends(user_headers)])
 
 
 @router.get("/", response_model=List[BeibootResponse])
-async def cluster_list() -> List[BeibootResponse]:
+async def cluster_list(request: Request) -> List[BeibootResponse]:
     beiboots = api.read_all()
 
     response = []

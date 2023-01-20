@@ -1,10 +1,9 @@
 import logging
-
 import kubernetes as k8s
 import uvicorn
-
 from fastapi import FastAPI
-from beiboot_rest.routers import clusters
+from beiboot_rest.routers import clusters, configs
+from beiboot_rest.routers.configs import update_beiboot_rest_config
 
 
 logger = logging.getLogger("uvicorn.beiboot")
@@ -18,7 +17,14 @@ except k8s.config.ConfigException:
     k8s.config.load_kube_config(config_file="./kubeconfig.yaml")
     logger.info("Loaded KUBECONFIG config")
 
+
 app = FastAPI()
+app.rest_configs = {}
+
+
+@app.on_event("startup")
+async def startup_event():
+    update_beiboot_rest_config()
 
 
 @app.get("/")
@@ -31,6 +37,7 @@ async def trigger_error():
     _ = 1 / 0
 
 
+app.include_router(configs.router)
 app.include_router(clusters.router)
 
 
