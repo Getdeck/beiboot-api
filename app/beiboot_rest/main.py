@@ -24,7 +24,8 @@ app.rest_configs = {}
 
 @app.on_event("startup")
 async def startup_event():
-    update_beiboot_rest_config()
+    # update_beiboot_rest_config()
+    pass
 
 
 @app.get("/")
