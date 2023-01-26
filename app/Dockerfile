@@ -12,10 +12,12 @@ WORKDIR /app
 
 RUN pip install --upgrade pip
 
-#COPY --from=requirement /requirements.txt /requirements.txt
 COPY ./pyproject.toml ./poetry.lock* ./
-COPY api /app/api
+COPY . /app
 RUN pip install -e .
+
+WORKDIR /app/beiboot_rest
+
 
 # fastapi
 ENV PYTHONDONTWRITEBYTECODE=1 \
