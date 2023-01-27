@@ -1,7 +1,7 @@
 import logging
+from importlib import metadata
 
 import sentry_sdk
-from importlib import metadata
 
 logger = logging.getLogger()
 

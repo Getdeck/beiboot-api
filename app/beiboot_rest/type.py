@@ -1,6 +1,7 @@
 from typing import Dict, Optional
-from pydantic import BaseModel
+
 from beiboot import types as bbt_dataclass
+from pydantic import BaseModel
 
 
 class BeibootParameters(BaseModel):
@@ -28,4 +29,4 @@ class BeibootRequest(BaseModel):
 class BeibootResponse(BaseModel):
     name: str
     state: bbt_dataclass.BeibootState
-    mtls_files: dict = {}
+    mtls_files: dict[str, str] = {}

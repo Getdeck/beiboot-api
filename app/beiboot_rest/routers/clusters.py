@@ -1,14 +1,10 @@
-from fastapi import APIRouter, Depends, Header, Request
-from fastapi.responses import JSONResponse
-from beiboot import api
-from beiboot.types import BeibootRequest
 from typing import List
-
-from beiboot_rest.type import BeibootRequest, BeibootResponse
-from fastapi.responses import JSONResponse
 
 from beiboot import api
 from beiboot import types as bbt_dataclass
+from beiboot_rest.type import BeibootRequest, BeibootResponse
+from fastapi import APIRouter, Depends, Header, Request
+from fastapi.responses import JSONResponse
 
 
 def user_headers(user_id: str | None = Header(default="default")):

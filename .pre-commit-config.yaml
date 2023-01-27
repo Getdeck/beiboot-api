@@ -20,8 +20,43 @@ repos:
     hooks:
       - id: isort
 
+  # mypy
+  # - repo: https://github.com/pre-commit/mirrors-mypy
+  #   rev: v0.991
+  #   hooks:
+  #     - id: mypy
+  #       args:
+  #         [
+  #           "--config-file",
+  #           "setup.cfg",
+  #           "--no-strict-optional",
+  #           "--ignore-missing-imports",
+  #         ]
+
   # gitlint - git commit message linter
   - repo: https://github.com/jorisroovers/gitlint
     rev: v0.18.0
     hooks:
       - id: gitlint
+
+  # poetry (has bugs in 1.3.0, maybe fixed in 1.3.X?)
+  # - repo: https://github.com/python-poetry/poetry
+  #   rev: "1.3.0"
+  #   hooks:
+  #     - id: poetry-check
+  #       language_version: python3.10
+  #       args: ["--directory", "app"]
+  #     - id: poetry-lock
+  #       language_version: python3.10
+  #       args: ["--directory", "app"]
+  #     - id: poetry-export
+  #       language_version: python3.10
+  #       args:
+  #         [
+  #           "--directory",
+  #           "app",
+  #           "-f",
+  #           "requirements.txt",
+  #           "-o",
+  #           "requirements.txt",
+  #         ]

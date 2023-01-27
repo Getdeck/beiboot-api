@@ -1,7 +1,6 @@
-from fastapi import APIRouter
-from config import settings
 import kubernetes as k8s
-
+from config import settings
+from fastapi import APIRouter
 
 router = APIRouter(prefix="/configs", tags=["configs"])
 
@@ -21,14 +20,14 @@ def update_beiboot_rest_config(name: str = settings.rc_default_name, namespace: 
     for item in rcs:
         rc[item] = cm.data.get(item.upper(), getattr(settings, item, None))
 
-    app.rest_configs[name] = rc
+    app.rest_configs[name] = rc  # type: ignore
 
 
 @router.get("/")
 async def config_list():
     from main import app
 
-    return app.rest_configs
+    return app.rest_configs  # type: ignore
 
 
 @router.get("/default/refresh/")
@@ -42,4 +41,4 @@ async def config_refresh(name: str):
     from main import app
 
     update_beiboot_rest_config(name=name)
-    return app.rest_configs
+    return app.rest_configs  # type: ignore

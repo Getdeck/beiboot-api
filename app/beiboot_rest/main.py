@@ -1,9 +1,11 @@
 import logging
+
 import kubernetes as k8s
 import uvicorn
-from fastapi import FastAPI
 from beiboot_rest.routers import clusters, configs
-from beiboot_rest.routers.configs import update_beiboot_rest_config
+from fastapi import FastAPI
+
+# from beiboot_rest.routers.configs import update_beiboot_rest_config
 
 
 logger = logging.getLogger("uvicorn.beiboot")
