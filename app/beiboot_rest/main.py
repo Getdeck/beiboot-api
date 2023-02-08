@@ -3,13 +3,11 @@ import logging
 import kubernetes as k8s
 import uvicorn
 from beiboot_rest.routers import clusters, configs
+from beiboot_rest.routers.configs import update_beiboot_rest_config
+from config import settings
 from fastapi import FastAPI
 
-# from beiboot_rest.routers.configs import update_beiboot_rest_config
-
-
 logger = logging.getLogger("uvicorn.beiboot")
-logger.info("Beiboot REST API startup")
 
 try:
     k8s.config.load_incluster_config()
@@ -26,8 +24,11 @@ app.rest_configs = {}
 
 @app.on_event("startup")
 async def startup_event():
-    # update_beiboot_rest_config()
-    pass
+    # setup rest config
+    try:
+        update_beiboot_rest_config()
+    except Exception:
+        logger.error(f"Loading configmap '{settings.rc_default_name}' failed")
 
 
 @app.get("/")

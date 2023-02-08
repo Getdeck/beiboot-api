@@ -1,6 +1,11 @@
+import logging
+
 import kubernetes as k8s
+import timeout_decorator
 from config import settings
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
+
+logger = logging.getLogger("uvicorn.beiboot")
 
 router = APIRouter(prefix="/configs", tags=["configs"])
 
@@ -10,6 +15,7 @@ rcs = [
 ]
 
 
+@timeout_decorator.timeout(5, timeout_exception=Exception)
 def update_beiboot_rest_config(name: str = settings.rc_default_name, namespace: str = settings.rc_default_namespace):
     from main import app
 
@@ -40,5 +46,9 @@ async def config_default_refresh():
 async def config_refresh(name: str):
     from main import app
 
-    update_beiboot_rest_config(name=name)
+    try:
+        update_beiboot_rest_config(name=name)
+    except Exception:
+        raise HTTPException(status_code=500, detail="Rest configmap error")
+
     return app.rest_configs  # type: ignore
