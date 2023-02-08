@@ -6,7 +6,7 @@ authors = ["Christian Busch <christian@blueshoe.io>"]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-fastapi = "^0.89.0"
+fastapi = "^0.90.0"
 uvicorn = "^0.20.0"
 pydantic = "^1.10.2"
 sentry-sdk = {extras = ["fastapi"], version = "^1.11.1"}

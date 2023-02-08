@@ -26,14 +26,14 @@ def update_beiboot_rest_config(name: str = settings.rc_default_name, namespace: 
     for item in rcs:
         rc[item] = cm.data.get(item.upper(), getattr(settings, item, None))
 
-    app.rest_configs[name] = rc  # type: ignore
+    app.rest_configs[name] = rc
 
 
 @router.get("/")
 async def config_list():
     from main import app
 
-    return app.rest_configs  # type: ignore
+    return app.rest_configs
 
 
 @router.get("/default/refresh/")
@@ -51,4 +51,4 @@ async def config_refresh(name: str):
     except Exception:
         raise HTTPException(status_code=500, detail="Rest configmap error")
 
-    return app.rest_configs  # type: ignore
+    return app.rest_configs
