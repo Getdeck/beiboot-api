@@ -155,12 +155,12 @@ async def websocket_endpoint(websocket: WebSocket, cluster_name: str):
             except asyncio.TimeoutError:
                 pass
 
-            # write heatbeat
+            # write heartbeat
             _ = api.write_heartbeat(
                 client_id=x_forwarded_user,
                 bbt=beiboot,
             )
-            logger.info(
+            logger.debug(
                 f"{datetime.now().isoformat()} - Websocket <3 (cluster: '{cluster_name}', client: '{x_forwarded_user}')."
             )
     except WebSocketDisconnect:
