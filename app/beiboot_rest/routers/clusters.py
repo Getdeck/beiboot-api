@@ -1,65 +1,188 @@
+import asyncio
+import logging
+from datetime import datetime
+from io import BytesIO
 from typing import List
 
 from beiboot import api
-from beiboot import types as bbt_dataclass
-from beiboot_rest.type import BeibootRequest, BeibootResponse
-from fastapi import APIRouter, Depends, Header, Request
-from fastapi.responses import JSONResponse
+from beiboot.types import BeibootParameters, BeibootProvider, BeibootRequest
+from fastapi import APIRouter, Depends, Request, WebSocket, WebSocketDisconnect
+from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi_pagination import Page, Params, paginate
+from type import ClusterRequest, ClusterResponse, Parameter
+
+logger = logging.getLogger("uvicorn.beiboot")
+
+router = APIRouter(prefix="/clusters", tags=["clusters"])
 
 
-def user_headers(user_id: str | None = Header(default="default")):
-    return {"user_id": user_id}
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
 
 
-router = APIRouter(prefix="/clusters", tags=["clusters"], dependencies=[Depends(user_headers)])
+manager = ConnectionManager()
 
 
-@router.get("/", response_model=List[BeibootResponse])
-async def cluster_list(request: Request) -> List[BeibootResponse]:
+@router.get("/ws")
+async def get():
+    cluster_name = "test"
+    return HTMLResponse(
+        f"""
+        <!DOCTYPE html>
+        <html>
+            <head>
+                <title>Heartbeat</title>
+            </head>
+            <body>
+                <h1>WebSocket Heartbeat</h1>
+                <script>
+                    var ws = new WebSocket(`ws://localhost:8001/clusters/{cluster_name}/heartbeat`);
+                </script>
+            </body>
+        </html>
+        """
+    )
+
+
+@router.get("/", response_model=Page[ClusterResponse])
+async def cluster_list(params: Params = Depends()) -> List[ClusterResponse]:
     beiboots = api.read_all()
 
     response = []
     for beiboot in beiboots:
-        response.append(BeibootResponse(name=beiboot.name, state=beiboot.state))
+        response.append(ClusterResponse(name=beiboot.name, state=beiboot.state))
+
+    return paginate(response, params)
+
+
+@router.get("/{cluster_name}", response_model=ClusterResponse)
+async def cluster_info(cluster_name: str) -> ClusterResponse:
+    beiboot = api.read(name=cluster_name)
+    response = ClusterResponse(name=beiboot.name, state=beiboot.state)
     return response
 
 
-@router.post("/", response_model=BeibootResponse)
-async def cluster_create(beiboot_request: BeibootRequest) -> BeibootResponse:
-    req = bbt_dataclass.BeibootRequest(
-        name=beiboot_request.name,
-        provider=bbt_dataclass.BeibootProvider(beiboot_request.provider),
-        parameters=bbt_dataclass.BeibootParameters(**beiboot_request.parameters.dict()),
-        labels=beiboot_request.labels,
+@router.post("/", response_model=ClusterResponse)
+async def cluster_create(request: ClusterRequest) -> ClusterResponse:
+    name = request.name
+
+    # TODO: parameter logic
+    names = []
+    values = []
+    for parameter in request.parameters:
+        names.append(parameter.name)
+        values.append(parameter.value)
+
+    def get_parameter_value_or_none(parameter, names, values):
+        try:
+            index = names.index(parameter)
+            return values[index]
+        except ValueError:
+            return None
+
+    k8s_version = get_parameter_value_or_none("K8S_VERSION", names, values)
+    node_count = get_parameter_value_or_none("NODE_COUNT", names, values)
+    if node_count:
+        node_count = int(node_count)
+
+    lifetime = get_parameter_value_or_none("LIFETIME", names, values)
+    session_timeout = get_parameter_value_or_none("SESSION_TIMEOUT", names, values)
+
+    req = BeibootRequest(
+        name=name,
+        provider=BeibootProvider.K3S,
+        parameters=BeibootParameters(
+            k8sVersion=k8s_version,
+            nodes=node_count,
+            maxLifetime=lifetime,
+            maxSessionTimeout=session_timeout,
+        ),
     )
 
     beiboot = api.create(req=req)
-    response = BeibootResponse(name=beiboot.name, state=beiboot.state)
+    response = ClusterResponse(name=beiboot.name, state=beiboot.state)
     return response
 
 
-@router.delete("/{name}", response_model=BeibootResponse)
-async def cluster_delete(name: str) -> BeibootResponse:
-    api.delete_by_name(name=name)
-    return JSONResponse(content={})
+@router.delete("/{cluster_name}", response_model=ClusterResponse)
+async def cluster_delete(cluster_name: str) -> ClusterResponse:
+    api.delete_by_name(name=cluster_name)
+    return ClusterResponse(name=cluster_name, state=None)
 
 
-@router.get("/{name}/state", response_model=BeibootResponse)
-async def cluster_state(name: str) -> BeibootResponse:
-    beiboot = api.read(name=name)
-    response = BeibootResponse(name=beiboot.name, state=beiboot.state)
+@router.get("/{cluster_name}/heartbeat", response_model=ClusterResponse)
+async def cluster_state(request: Request, cluster_name: str) -> ClusterResponse:
+    x_forwarded_user = request.headers.get("X-Forwarded-User")
+
+    beiboot = api.read(name=cluster_name)
+    _ = api.write_heartbeat(
+        client_id=x_forwarded_user,
+        bbt=beiboot,
+    )
+
+    response = ClusterResponse(name=beiboot.name, state=beiboot.state)
     return response
 
 
-@router.get("/{name}/kubeconfig")
-async def cluster_kubeconfig(name: str):
-    beiboot = api.read(name=name)
-    response = JSONResponse(content={"kubeconfig": beiboot.kubeconfig})
-    return response
+@router.websocket("/{cluster_name}/heartbeat")
+async def websocket_endpoint(websocket: WebSocket, cluster_name: str):
+    x_forwarded_user = websocket.headers.get("X-Forwarded-User") or "unknown"
+
+    await manager.connect(websocket)
+    logger.info(
+        f"{datetime.now().isoformat()} - Websocket connection opened (cluster: '{cluster_name}', client: '{x_forwarded_user}')."
+    )
+
+    try:
+        beiboot = api.read(name=cluster_name)
+    except RuntimeError:
+        manager.disconnect(websocket)
+        raise Exception("Invalid 'cluster_name'.")
+
+    try:
+        while True:
+            # probe websocket connection
+            try:
+                _ = await asyncio.wait_for(websocket.receive_text(), 5)
+            except asyncio.TimeoutError:
+                pass
+
+            # write heatbeat
+            _ = api.write_heartbeat(
+                client_id=x_forwarded_user,
+                bbt=beiboot,
+            )
+            logger.info(
+                f"{datetime.now().isoformat()} - Websocket <3 (cluster: '{cluster_name}', client: '{x_forwarded_user}')."
+            )
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+        logger.info(
+            f"{datetime.now().isoformat()} - Websocket connection closed (cluster: '{cluster_name}', client: '{x_forwarded_user}')."
+        )
 
 
-@router.get("/{name}/mtls")
-async def cluster_mtls(name: str):
-    beiboot = api.read(name=name)
-    response = JSONResponse(content=beiboot.mtls_files)
-    return response
+@router.get("/{cluster_name}/kubeconfig")
+async def cluster_kubeconfig(cluster_name: str):
+    beiboot = api.read(name=cluster_name)
+    kubeconfig = BytesIO(beiboot.kubeconfig.encode())
+    return StreamingResponse(kubeconfig, media_type="application/yaml")
+
+
+@router.get("/{cluster_name}/parameters", response_model=Page[Parameter])
+async def cluster_parameters(cluster_name: str, params: Params = Depends()):
+    response = []
+    return paginate(response, params)
+
+
+@router.get("/{cluster_name}/parameters/{parameter_name}")
+async def cluster_parameter(cluster_name: str, parameter_name: str):
+    pass

@@ -1,32 +1,35 @@
-from typing import Dict, Optional
+from enum import Enum
+from typing import Dict, List, Optional
 
-from beiboot import types as bbt_dataclass
+from beiboot.types import BeibootState
 from pydantic import BaseModel
 
 
-class BeibootParameters(BaseModel):
-    k8sVersion: Optional[str]
-    ports: Optional[list[str]]
-    nodes: Optional[int] = 1
-    maxLifetime: Optional[str]
-    maxSessionTimeout: Optional[str]
-    # clusterReadyTimeout: Optional[int] = field(default_factory=lambda: default_configuration.CLUSTER_CREATION_TIMEOUT)
-    serverResources: Optional[dict[str, dict[str, str]]] = {"requests": {"cpu": "0.25", "memory": "0.25Gi"}}
-    nodeResources: Optional[dict[str, dict[str, str]]] = {"requests": {"cpu": "0.25", "memory": "0.25Gi"}}
-    serverStorageRequests: Optional[str] = "500Mi"
-    nodeStorageRequests: Optional[str]
-    # gefyra: GefyraParams = field(default_factory=lambda: GefyraParams())
-    # tunnel: Optional[TunnelParams] = field(default_factory=lambda: TunnelParams())
+class ClusterParameter(Enum):
+    K8S_VERSION = "K8S_VERSION"
+    NODE_COUNT = "NODE_COUNT"
+    LIFETIME = "LIFETIME"
+    SESSION_TIMEOUT = "SESSION_TIMEOUT"
+    # "SERVER_RESOURCES_REQUESTS_CPU"
+    # "SERVER_RESOURCES_REQUESTS_MEMORY"
 
 
-class BeibootRequest(BaseModel):
+class Parameter(BaseModel):
+    name: ClusterParameter
+    value: str
+
+
+# class Parameters(BaseModel):
+#     k8s_version: Parameter(name=ClusterParameter.K8S_VERSION)
+
+
+class ClusterRequest(BaseModel):
     name: str
-    provider: bbt_dataclass.BeibootProvider = bbt_dataclass.BeibootProvider.K3S
-    parameters: BeibootParameters = BeibootParameters()
+    parameters: Optional[List[Parameter]] = None
+    ports: Optional[List[str]] = None
     labels: Dict[str, str] = {}
 
 
-class BeibootResponse(BaseModel):
+class ClusterResponse(BaseModel):
     name: str
-    state: bbt_dataclass.BeibootState
-    mtls_files: dict[str, str] = {}
+    state: BeibootState
