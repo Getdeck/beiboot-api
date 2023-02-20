@@ -25,7 +25,7 @@ def user_headers(
 
 
 app = FastAPI(dependencies=[Depends(user_headers)])
-app.rest_configs = {}
+app.cluster_configs = {}
 
 
 @app.on_event("startup")

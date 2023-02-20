@@ -6,10 +6,12 @@ from typing import List
 
 from beiboot import api
 from beiboot.types import BeibootParameters, BeibootProvider, BeibootRequest
+from cluster.types import ClusterRequest, ClusterResponse, Parameters
+from cluster_config.types import ClusterConfig
+from config import settings
 from fastapi import APIRouter, Depends, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi_pagination import Page, Params, paginate
-from type import ClusterRequest, ClusterResponse, Parameter
 
 logger = logging.getLogger("uvicorn.beiboot")
 
@@ -74,40 +76,29 @@ async def cluster_info(cluster_name: str) -> ClusterResponse:
 async def cluster_create(request: ClusterRequest) -> ClusterResponse:
     name = request.name
 
-    # TODO: parameter logic
-    names = []
-    values = []
-    for parameter in request.parameters:
-        names.append(parameter.name)
-        values.append(parameter.value)
+    # parameter validation via pydantic
+    cluster_config = ClusterConfig(**settings.dict())
+    tmp = {str(parameter.name.value): parameter for parameter in request.parameters}
 
-    def get_parameter_value_or_none(parameter, names, values):
-        try:
-            index = names.index(parameter)
-            return values[index]
-        except ValueError:
-            return None
+    try:
+        parameters = Parameters(cluster_config=cluster_config, **tmp)
+    except Exception as e:
+        # TODO: error response
+        raise e
 
-    k8s_version = get_parameter_value_or_none("K8S_VERSION", names, values)
-    node_count = get_parameter_value_or_none("NODE_COUNT", names, values)
-    if node_count:
-        node_count = int(node_count)
-
-    lifetime = get_parameter_value_or_none("LIFETIME", names, values)
-    session_timeout = get_parameter_value_or_none("SESSION_TIMEOUT", names, values)
-
+    # cluster creation
     req = BeibootRequest(
         name=name,
         provider=BeibootProvider.K3S,
         parameters=BeibootParameters(
-            k8sVersion=k8s_version,
-            nodes=node_count,
-            maxLifetime=lifetime,
-            maxSessionTimeout=session_timeout,
+            k8sVersion=parameters.k8s_version.value,
+            nodes=parameters.node_count.value,
+            maxLifetime=parameters.lifetime.value,
+            maxSessionTimeout=parameters.session_timeout.value,
         ),
     )
-
     beiboot = api.create(req=req)
+
     response = ClusterResponse(name=beiboot.name, state=beiboot.state)
     return response
 
@@ -177,7 +168,7 @@ async def cluster_kubeconfig(cluster_name: str):
     return StreamingResponse(kubeconfig, media_type="application/yaml")
 
 
-@router.get("/{cluster_name}/parameters", response_model=Page[Parameter])
+@router.get("/{cluster_name}/parameters", response_model=Page[dict])
 async def cluster_parameters(cluster_name: str, params: Params = Depends()):
     response = []
     return paginate(response, params)
