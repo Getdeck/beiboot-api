@@ -1,29 +1,47 @@
+ARG PYTHON_VERSION="3.10"
+ARG POETRY_VERSION="1.3.2"
+
 # base
-FROM python:3.10-slim AS base
+FROM python:${PYTHON_VERSION}-alpine AS base
 
-RUN apt-get update && apt-get upgrade -y \
-    && apt-get install --no-install-recommends -y \
-        curl git python3-pip libpango-1.0-0 libharfbuzz0b libpangoft2-1.0-0 \
-    && apt-get clean -y && rm -rf /var/lib/apt/lists/*
-
-# venv builder
-FROM base AS builder
-WORKDIR /app
-
+RUN apk add --no-cache curl
 RUN pip install --upgrade pip
 
+# requirement
+FROM base AS requirement
+ARG POETRY_VERSION
+
+ENV POETRY_HOME="/opt/poetry"
+RUN python3 -m venv $POETRY_HOME
+RUN $POETRY_HOME/bin/pip install poetry==${POETRY_VERSION}
+
 COPY ./pyproject.toml ./poetry.lock* ./
-COPY . /app
-RUN pip install -e .
+RUN $POETRY_HOME/bin/poetry export -f requirements.txt --output requirements.txt --without-hashes
 
-WORKDIR /app/beiboot_rest
+# builder
+FROM base AS builder
 
+ENV VENV_HOME="/opt/venv"
+RUN python3 -m venv $VENV_HOME
+
+COPY --from=requirement /requirements.txt /requirements.txt
+RUN $VENV_HOME/bin/pip install -r requirements.txt
 
 # fastapi
-ENV PYTHONDONTWRITEBYTECODE=1 \
+FROM base AS fastapi
+
+ENV VENV_HOME="/opt/venv"
+COPY --from=builder $VENV_HOME $VENV_HOME
+
+ENV PYTHONPATH="/app:$VENV_HOME" \
+    PATH="$VENV_HOME/bin:$PATH" \
+    PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-RUN adduser --system --no-create-home user
+COPY beiboot_rest /app
+WORKDIR /app
+
+RUN adduser --system --no-create-home user && chown -R user /app
 USER user
 
 EXPOSE 8080

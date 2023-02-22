@@ -2,10 +2,10 @@ import logging
 
 import kubernetes as k8s
 import uvicorn
-from beiboot_rest.routers import clusters, configs, connections
-from beiboot_rest.routers.configs import update_cluster_config
 from config import settings
 from fastapi import Depends, FastAPI, Header
+from routers import clusters, configs, connections
+from routers.configs import update_cluster_config
 
 logger = logging.getLogger("uvicorn.beiboot")
 
@@ -28,21 +28,38 @@ app = FastAPI(dependencies=[Depends(user_headers)])
 app.cluster_configs = {}
 
 
-@app.on_event("startup")
-async def startup_event():
-    # setup kubeconfig
+def setup_kubeconfig() -> None:
+    # incluster config
     try:
         k8s.config.load_incluster_config()
         logger.info("Loaded in-cluster config.")
     except k8s.config.ConfigException:
+        pass
+    else:
+        return None
+
+    # local config
+    try:
         k8s.config.load_kube_config(config_file=settings.k8s_config_file)
         logger.info(f"Loaded local config: '{settings.k8s_config_file}'.")
+    except k8s.config.ConfigException:
+        pass
+    else:
+        return None
+
+    logger.error("Kubeconfig setup failed.")
+
+
+@app.on_event("startup")
+async def startup_event():
+    # setup kubeconfig
+    setup_kubeconfig()
 
     # setup cluster config
     try:
         update_cluster_config()
     except Exception:
-        logger.error(f"Loading configmap '{settings.cc_default_name}' failed.")
+        logger.error(f"Loading default configmap '{settings.cc_default_name}' failed.")
 
 
 @app.get("/")
