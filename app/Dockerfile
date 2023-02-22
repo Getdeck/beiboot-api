@@ -3,12 +3,14 @@ ARG POETRY_VERSION="1.3.2"
 
 # base
 FROM python:${PYTHON_VERSION}-alpine AS base
-
 RUN apk update && apk upgrade
 RUN pip install --upgrade pip
 
 # requirement
-FROM base AS requirement
+FROM python:${PYTHON_VERSION} AS requirement
+RUN apt-get update && apt-get upgrade -y \
+    && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+
 ARG POETRY_VERSION
 
 ENV POETRY_HOME="/opt/poetry"
@@ -19,7 +21,7 @@ COPY ./pyproject.toml ./poetry.lock* ./
 RUN $POETRY_HOME/bin/poetry export -f requirements.txt --output requirements.txt --without-hashes
 
 # builder
-FROM python:${PYTHON_VERSION} AS builder
+FROM base AS builder
 
 ENV VENV_HOME="/opt/venv"
 RUN python3 -m venv $VENV_HOME
