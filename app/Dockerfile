@@ -4,39 +4,40 @@ ARG POETRY_VERSION="1.3.2"
 # base
 FROM python:${PYTHON_VERSION}-alpine AS base
 RUN apk update && apk upgrade
-RUN pip install --upgrade pip
 
 # requirement
 FROM python:${PYTHON_VERSION} AS requirement
+ARG POETRY_VERSION
+ARG POETRY_HOME="/opt/poetry"
+
 RUN apt-get update && apt-get upgrade -y \
     && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
-ARG POETRY_VERSION
-
-ENV POETRY_HOME="/opt/poetry"
-RUN python3 -m venv $POETRY_HOME
-RUN $POETRY_HOME/bin/pip install poetry==${POETRY_VERSION}
+RUN python3 -m venv ${POETRY_HOME}
+RUN ${POETRY_HOME}/bin/pip install --upgrade pip
+RUN ${POETRY_HOME}/bin/pip install poetry==${POETRY_VERSION}
 
 COPY ./pyproject.toml ./poetry.lock* ./
-RUN $POETRY_HOME/bin/poetry export -f requirements.txt --output requirements.txt --without-hashes
+RUN ${POETRY_HOME}/bin/poetry export -f requirements.txt --output requirements.txt --without-hashes
 
 # builder
 FROM base AS builder
+ARG VENV_HOME="/opt/venv"
 
-ENV VENV_HOME="/opt/venv"
-RUN python3 -m venv $VENV_HOME
+RUN python3 -m venv ${VENV_HOME}
+RUN ${VENV_HOME}/bin/pip install --upgrade pip
 
 COPY --from=requirement /requirements.txt /requirements.txt
-RUN $VENV_HOME/bin/pip install -r requirements.txt
+RUN ${VENV_HOME}/bin/pip install -r requirements.txt
 
 # fastapi
 FROM base AS fastapi
+ARG VENV_HOME="/opt/venv"
 
-ENV VENV_HOME="/opt/venv"
-COPY --from=builder $VENV_HOME $VENV_HOME
+COPY --from=builder ${VENV_HOME} ${VENV_HOME}
 
-ENV PYTHONPATH="/app:$VENV_HOME" \
-    PATH="$VENV_HOME/bin:$PATH" \
+ENV PYTHONPATH="/app:${VENV_HOME}" \
+    PATH="${VENV_HOME}/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
