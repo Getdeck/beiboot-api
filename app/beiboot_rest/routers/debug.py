@@ -10,11 +10,13 @@ router = APIRouter(prefix="/debug", tags=["debug"])
 
 @router.get("/headers")
 async def get_headers(request: Request):
-    # user headers
+    # user
     x_forwarded_user = request.headers.get("X-Forwarded-User", None)
     x_forwarded_groups = request.headers.get("X-Forwarded-Groups", None)
     x_forwarded_email = request.headers.get("X-Forwarded-Email", None)
     x_forwarded_preferred_username = request.headers.get("X-Forwarded-Preferred-Username", None)
+
+    x_forwarded_access_token = request.headers.get("X-Forwarded-Access-Token", None)
 
     response = JSONResponse(
         content={
@@ -22,6 +24,7 @@ async def get_headers(request: Request):
             "X-Forwarded-Groups": x_forwarded_groups,
             "X-Forwarded-Email": x_forwarded_email,
             "X-Forwarded-Preferred-Username": x_forwarded_preferred_username,
+            "X-Forwarded-Access-Token": x_forwarded_access_token,
         }
     )
     return response

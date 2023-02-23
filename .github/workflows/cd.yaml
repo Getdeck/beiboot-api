@@ -1,5 +1,16 @@
 name: CD
-on: push
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - "*"
+  workflow_dispatch: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   publish-docker-image:
     runs-on: ubuntu-latest
@@ -34,4 +45,3 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.image_metadata.outputs.tags }}
           cache-from: type=registry,ref=${{ steps.image_metadata.outputs.tags }}
-
