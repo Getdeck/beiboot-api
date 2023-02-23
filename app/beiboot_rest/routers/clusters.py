@@ -12,10 +12,11 @@ from config import settings
 from fastapi import APIRouter, Depends, Request, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi_pagination import Page, Params, paginate
+from headers import user_headers
 
 logger = logging.getLogger("uvicorn.beiboot")
 
-router = APIRouter(prefix="/clusters", tags=["clusters"])
+router = APIRouter(prefix="/clusters", tags=["clusters"], dependencies=[Depends(user_headers)])
 
 
 class ConnectionManager:

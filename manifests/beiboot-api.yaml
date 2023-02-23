@@ -46,7 +46,7 @@ spec:
     spec:
       containers:
         - name: beiboot-api
-          image: quay.io/getdeck/beiboot-api:latest
+          image: quay.io/getdeck/beiboot-rest:latest
           imagePullPolicy: Always
           resources:
             requests:
@@ -54,10 +54,21 @@ spec:
               cpu: "250m"
             limits:
               memory: "128Mi"
-              cpu: "500m"
           ports:
             - name: http-bbt-svc
               containerPort: 8080
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8080
+            initialDelaySeconds: 3
+            periodSeconds: 3
       serviceAccountName: beiboot-api
 
 ---

@@ -4,11 +4,12 @@ import kubernetes as k8s
 import timeout_decorator
 from cluster_config.types import ClusterConfig
 from config import settings
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from headers import user_headers
 
 logger = logging.getLogger("uvicorn.beiboot")
 
-router = APIRouter(prefix="/configs", tags=["configs"])
+router = APIRouter(prefix="/configs", tags=["configs"], dependencies=[Depends(user_headers)])
 
 
 @timeout_decorator.timeout(5, timeout_exception=Exception)

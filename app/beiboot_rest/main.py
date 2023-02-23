@@ -2,29 +2,15 @@ import logging
 
 import kubernetes as k8s
 import uvicorn
-from beiboot_rest.routers import clusters, configs, connections
+from beiboot_rest.routers import clusters, configs, connections, debug
 from beiboot_rest.routers.configs import update_cluster_config
 from config import settings
-from fastapi import Depends, FastAPI, Header
+from fastapi import FastAPI
 
 logger = logging.getLogger("uvicorn.beiboot")
 
 
-def user_headers(
-    x_forwarded_user: str | None = Header(),
-    x_forwarded_groups: str | None = Header(default=None),
-    x_forwarded_email: str | None = Header(default=None),
-    x_forwarded_preferred_username: str | None = Header(default=None),
-):
-    return {
-        "X-Forwarded-User": x_forwarded_user,
-        "X-Forwarded-Groups": x_forwarded_groups,
-        "X-Forwarded-Email": x_forwarded_email,
-        "X-Forwarded-Preferred-Username": x_forwarded_preferred_username,
-    }
-
-
-app = FastAPI(dependencies=[Depends(user_headers)])
+app = FastAPI()
 app.cluster_configs = {}
 
 
@@ -50,14 +36,10 @@ async def get_root():
     return {"Beiboot": "API"}
 
 
-@app.get("/sentry-debug/")
-async def trigger_error():
-    _ = 1 / 0
-
-
-app.include_router(configs.router)
 app.include_router(clusters.router)
 app.include_router(connections.router)
+app.include_router(configs.router)
+app.include_router(debug.router)
 
 
 def start():
