@@ -19,16 +19,4 @@ export class DefaultService {
         });
     }
 
-    /**
-     * Trigger Error
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public static triggerErrorSentryDebugGet(): CancelablePromise<any> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/sentry-debug/',
-        });
-    }
-
 }

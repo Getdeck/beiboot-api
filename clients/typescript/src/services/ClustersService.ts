@@ -1,8 +1,10 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { BeibootRequest } from '../models/BeibootRequest';
-import type { BeibootResponse } from '../models/BeibootResponse';
+import type { ClusterRequest } from '../models/ClusterRequest';
+import type { ClusterResponse } from '../models/ClusterResponse';
+import type { Page_ClusterResponse_ } from '../models/Page_ClusterResponse_';
+import type { Page_dict_ } from '../models/Page_dict_';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -11,19 +13,66 @@ import { request as __request } from '../core/request';
 export class ClustersService {
 
     /**
+     * Get
+     * @param xForwardedUser
+     * @param xForwardedGroups
+     * @param xForwardedEmail
+     * @param xForwardedPreferredUsername
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static getClustersWsGet(
+        xForwardedUser: string,
+        xForwardedGroups?: string,
+        xForwardedEmail?: string,
+        xForwardedPreferredUsername?: string,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/clusters/ws',
+            headers: {
+                'x-forwarded-user': xForwardedUser,
+                'x-forwarded-groups': xForwardedGroups,
+                'x-forwarded-email': xForwardedEmail,
+                'x-forwarded-preferred-username': xForwardedPreferredUsername,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
      * Cluster List
-     * @param userId
-     * @returns BeibootResponse Successful Response
+     * @param xForwardedUser
+     * @param page
+     * @param size
+     * @param xForwardedGroups
+     * @param xForwardedEmail
+     * @param xForwardedPreferredUsername
+     * @returns Page_ClusterResponse_ Successful Response
      * @throws ApiError
      */
     public static clusterListClustersGet(
-        userId: string = 'default',
-    ): CancelablePromise<Array<BeibootResponse>> {
+        xForwardedUser: string,
+        page: number = 1,
+        size: number = 50,
+        xForwardedGroups?: string,
+        xForwardedEmail?: string,
+        xForwardedPreferredUsername?: string,
+    ): CancelablePromise<Page_ClusterResponse_> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/clusters/',
             headers: {
-                'user-id': userId,
+                'x-forwarded-user': xForwardedUser,
+                'x-forwarded-groups': xForwardedGroups,
+                'x-forwarded-email': xForwardedEmail,
+                'x-forwarded-preferred-username': xForwardedPreferredUsername,
+            },
+            query: {
+                'page': page,
+                'size': size,
             },
             errors: {
                 422: `Validation Error`,
@@ -33,20 +82,29 @@ export class ClustersService {
 
     /**
      * Cluster Create
+     * @param xForwardedUser
      * @param requestBody
-     * @param userId
-     * @returns BeibootResponse Successful Response
+     * @param xForwardedGroups
+     * @param xForwardedEmail
+     * @param xForwardedPreferredUsername
+     * @returns ClusterResponse Successful Response
      * @throws ApiError
      */
     public static clusterCreateClustersPost(
-        requestBody: BeibootRequest,
-        userId: string = 'default',
-    ): CancelablePromise<BeibootResponse> {
+        xForwardedUser: string,
+        requestBody: ClusterRequest,
+        xForwardedGroups?: string,
+        xForwardedEmail?: string,
+        xForwardedPreferredUsername?: string,
+    ): CancelablePromise<ClusterResponse> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/clusters/',
             headers: {
-                'user-id': userId,
+                'x-forwarded-user': xForwardedUser,
+                'x-forwarded-groups': xForwardedGroups,
+                'x-forwarded-email': xForwardedEmail,
+                'x-forwarded-preferred-username': xForwardedPreferredUsername,
             },
             body: requestBody,
             mediaType: 'application/json',
@@ -57,24 +115,68 @@ export class ClustersService {
     }
 
     /**
-     * Cluster Delete
-     * @param name
-     * @param userId
-     * @returns BeibootResponse Successful Response
+     * Cluster Info
+     * @param clusterName
+     * @param xForwardedUser
+     * @param xForwardedGroups
+     * @param xForwardedEmail
+     * @param xForwardedPreferredUsername
+     * @returns ClusterResponse Successful Response
      * @throws ApiError
      */
-    public static clusterDeleteClustersNameDelete(
-        name: string,
-        userId: string = 'default',
-    ): CancelablePromise<BeibootResponse> {
+    public static clusterInfoClustersClusterNameGet(
+        clusterName: string,
+        xForwardedUser: string,
+        xForwardedGroups?: string,
+        xForwardedEmail?: string,
+        xForwardedPreferredUsername?: string,
+    ): CancelablePromise<ClusterResponse> {
         return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/clusters/{name}',
+            method: 'GET',
+            url: '/clusters/{cluster_name}',
             path: {
-                'name': name,
+                'cluster_name': clusterName,
             },
             headers: {
-                'user-id': userId,
+                'x-forwarded-user': xForwardedUser,
+                'x-forwarded-groups': xForwardedGroups,
+                'x-forwarded-email': xForwardedEmail,
+                'x-forwarded-preferred-username': xForwardedPreferredUsername,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Cluster Delete
+     * @param clusterName
+     * @param xForwardedUser
+     * @param xForwardedGroups
+     * @param xForwardedEmail
+     * @param xForwardedPreferredUsername
+     * @returns ClusterResponse Successful Response
+     * @throws ApiError
+     */
+    public static clusterDeleteClustersClusterNameDelete(
+        clusterName: string,
+        xForwardedUser: string,
+        xForwardedGroups?: string,
+        xForwardedEmail?: string,
+        xForwardedPreferredUsername?: string,
+    ): CancelablePromise<ClusterResponse> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/clusters/{cluster_name}',
+            path: {
+                'cluster_name': clusterName,
+            },
+            headers: {
+                'x-forwarded-user': xForwardedUser,
+                'x-forwarded-groups': xForwardedGroups,
+                'x-forwarded-email': xForwardedEmail,
+                'x-forwarded-preferred-username': xForwardedPreferredUsername,
             },
             errors: {
                 422: `Validation Error`,
@@ -84,23 +186,32 @@ export class ClustersService {
 
     /**
      * Cluster State
-     * @param name
-     * @param userId
-     * @returns BeibootResponse Successful Response
+     * @param clusterName
+     * @param xForwardedUser
+     * @param xForwardedGroups
+     * @param xForwardedEmail
+     * @param xForwardedPreferredUsername
+     * @returns ClusterResponse Successful Response
      * @throws ApiError
      */
-    public static clusterStateClustersNameStateGet(
-        name: string,
-        userId: string = 'default',
-    ): CancelablePromise<BeibootResponse> {
+    public static clusterStateClustersClusterNameHeartbeatGet(
+        clusterName: string,
+        xForwardedUser: string,
+        xForwardedGroups?: string,
+        xForwardedEmail?: string,
+        xForwardedPreferredUsername?: string,
+    ): CancelablePromise<ClusterResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/clusters/{name}/state',
+            url: '/clusters/{cluster_name}/heartbeat',
             path: {
-                'name': name,
+                'cluster_name': clusterName,
             },
             headers: {
-                'user-id': userId,
+                'x-forwarded-user': xForwardedUser,
+                'x-forwarded-groups': xForwardedGroups,
+                'x-forwarded-email': xForwardedEmail,
+                'x-forwarded-preferred-username': xForwardedPreferredUsername,
             },
             errors: {
                 422: `Validation Error`,
@@ -110,23 +221,32 @@ export class ClustersService {
 
     /**
      * Cluster Kubeconfig
-     * @param name
-     * @param userId
+     * @param clusterName
+     * @param xForwardedUser
+     * @param xForwardedGroups
+     * @param xForwardedEmail
+     * @param xForwardedPreferredUsername
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static clusterKubeconfigClustersNameKubeconfigGet(
-        name: string,
-        userId: string = 'default',
+    public static clusterKubeconfigClustersClusterNameKubeconfigGet(
+        clusterName: string,
+        xForwardedUser: string,
+        xForwardedGroups?: string,
+        xForwardedEmail?: string,
+        xForwardedPreferredUsername?: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/clusters/{name}/kubeconfig',
+            url: '/clusters/{cluster_name}/kubeconfig',
             path: {
-                'name': name,
+                'cluster_name': clusterName,
             },
             headers: {
-                'user-id': userId,
+                'x-forwarded-user': xForwardedUser,
+                'x-forwarded-groups': xForwardedGroups,
+                'x-forwarded-email': xForwardedEmail,
+                'x-forwarded-preferred-username': xForwardedPreferredUsername,
             },
             errors: {
                 422: `Validation Error`,
@@ -135,24 +255,79 @@ export class ClustersService {
     }
 
     /**
-     * Cluster Mtls
-     * @param name
-     * @param userId
+     * Cluster Parameters
+     * @param clusterName
+     * @param xForwardedUser
+     * @param page
+     * @param size
+     * @param xForwardedGroups
+     * @param xForwardedEmail
+     * @param xForwardedPreferredUsername
+     * @returns Page_dict_ Successful Response
+     * @throws ApiError
+     */
+    public static clusterParametersClustersClusterNameParametersGet(
+        clusterName: string,
+        xForwardedUser: string,
+        page: number = 1,
+        size: number = 50,
+        xForwardedGroups?: string,
+        xForwardedEmail?: string,
+        xForwardedPreferredUsername?: string,
+    ): CancelablePromise<Page_dict_> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/clusters/{cluster_name}/parameters',
+            path: {
+                'cluster_name': clusterName,
+            },
+            headers: {
+                'x-forwarded-user': xForwardedUser,
+                'x-forwarded-groups': xForwardedGroups,
+                'x-forwarded-email': xForwardedEmail,
+                'x-forwarded-preferred-username': xForwardedPreferredUsername,
+            },
+            query: {
+                'page': page,
+                'size': size,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Cluster Parameter
+     * @param clusterName
+     * @param parameterName
+     * @param xForwardedUser
+     * @param xForwardedGroups
+     * @param xForwardedEmail
+     * @param xForwardedPreferredUsername
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static clusterMtlsClustersNameMtlsGet(
-        name: string,
-        userId: string = 'default',
+    public static clusterParameterClustersClusterNameParametersParameterNameGet(
+        clusterName: string,
+        parameterName: string,
+        xForwardedUser: string,
+        xForwardedGroups?: string,
+        xForwardedEmail?: string,
+        xForwardedPreferredUsername?: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/clusters/{name}/mtls',
+            url: '/clusters/{cluster_name}/parameters/{parameter_name}',
             path: {
-                'name': name,
+                'cluster_name': clusterName,
+                'parameter_name': parameterName,
             },
             headers: {
-                'user-id': userId,
+                'x-forwarded-user': xForwardedUser,
+                'x-forwarded-groups': xForwardedGroups,
+                'x-forwarded-email': xForwardedEmail,
+                'x-forwarded-preferred-username': xForwardedPreferredUsername,
             },
             errors: {
                 422: `Validation Error`,

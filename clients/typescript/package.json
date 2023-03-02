@@ -4,7 +4,7 @@
   "description": "Typescript client for beiboot-rest",
   "main": "index.js",
   "scripts": {
-    "generate-client": "openapi --input openapi.json --output ./src --client axios"
+    "generate-client": "openapi --input ../../app/beiboot_rest/openapi.json --output ./src --client axios"
   },
   "author": "",
   "license": "Apache-2.0",

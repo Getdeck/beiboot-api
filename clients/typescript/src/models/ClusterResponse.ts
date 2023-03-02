@@ -4,9 +4,8 @@
 
 import type { BeibootState } from './BeibootState';
 
-export type BeibootResponse = {
+export type ClusterResponse = {
     name: string;
-    state: BeibootState;
-    mtls_files?: any;
+    state?: BeibootState;
 };
 

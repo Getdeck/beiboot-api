@@ -9,42 +9,92 @@ export class ConfigsService {
 
     /**
      * Config List
+     * @param xForwardedUser
+     * @param xForwardedGroups
+     * @param xForwardedEmail
+     * @param xForwardedPreferredUsername
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static configListConfigsGet(): CancelablePromise<any> {
+    public static configListConfigsGet(
+        xForwardedUser: string,
+        xForwardedGroups?: string,
+        xForwardedEmail?: string,
+        xForwardedPreferredUsername?: string,
+    ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/configs/',
+            headers: {
+                'x-forwarded-user': xForwardedUser,
+                'x-forwarded-groups': xForwardedGroups,
+                'x-forwarded-email': xForwardedEmail,
+                'x-forwarded-preferred-username': xForwardedPreferredUsername,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
         });
     }
 
     /**
      * Config Default Refresh
+     * @param xForwardedUser
+     * @param xForwardedGroups
+     * @param xForwardedEmail
+     * @param xForwardedPreferredUsername
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static configDefaultRefreshConfigsDefaultRefreshGet(): CancelablePromise<any> {
+    public static configDefaultRefreshConfigsDefaultRefreshGet(
+        xForwardedUser: string,
+        xForwardedGroups?: string,
+        xForwardedEmail?: string,
+        xForwardedPreferredUsername?: string,
+    ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/configs/default/refresh/',
+            headers: {
+                'x-forwarded-user': xForwardedUser,
+                'x-forwarded-groups': xForwardedGroups,
+                'x-forwarded-email': xForwardedEmail,
+                'x-forwarded-preferred-username': xForwardedPreferredUsername,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
         });
     }
 
     /**
      * Config Refresh
-     * @param name
+     * @param configName
+     * @param xForwardedUser
+     * @param xForwardedGroups
+     * @param xForwardedEmail
+     * @param xForwardedPreferredUsername
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static configRefreshConfigsNameRefreshGet(
-        name: string,
+    public static configRefreshConfigsConfigNameRefreshGet(
+        configName: string,
+        xForwardedUser: string,
+        xForwardedGroups?: string,
+        xForwardedEmail?: string,
+        xForwardedPreferredUsername?: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/configs/{name}/refresh/',
+            url: '/configs/{config_name}/refresh/',
             path: {
-                'name': name,
+                'config_name': configName,
+            },
+            headers: {
+                'x-forwarded-user': xForwardedUser,
+                'x-forwarded-groups': xForwardedGroups,
+                'x-forwarded-email': xForwardedEmail,
+                'x-forwarded-preferred-username': xForwardedPreferredUsername,
             },
             errors: {
                 422: `Validation Error`,
