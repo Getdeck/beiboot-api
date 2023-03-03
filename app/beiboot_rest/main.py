@@ -3,7 +3,9 @@ import logging
 import kubernetes as k8s
 import uvicorn
 from config import settings
-from fastapi import FastAPI
+from exceptions import BeibootException
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from routers import clusters, configs, connections, debug
 from routers.configs import update_cluster_config
 
@@ -46,6 +48,16 @@ async def startup_event():
         update_cluster_config()
     except Exception:
         logger.error(f"Loading default configmap '{settings.cc_default_name}' failed.")
+
+
+@app.exception_handler(BeibootException)
+async def beiboot_exception_handler(request: Request, exc: BeibootException):
+    # TODO: add error to sentry? -> exc.error
+
+    return JSONResponse(
+        status_code=500,
+        content={"message": exc.message},
+    )
 
 
 @app.get("/")

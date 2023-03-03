@@ -6,5 +6,6 @@
     "python.testing.pytestEnabled": true,
     "python.analysis.extraPaths": [
         "./app/beiboot_rest"
-    ]
+    ],
+    "python.linting.enabled": false
 }

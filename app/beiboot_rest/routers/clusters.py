@@ -6,10 +6,18 @@ from typing import List
 
 from beiboot import api
 from beiboot.types import BeibootParameters, BeibootProvider, BeibootRequest
-from cluster.types import ClusterRequest, ClusterResponse, Parameters
+from cluster.types import (
+    ClusterInfoResponse,
+    ClusterParameter,
+    ClusterRequest,
+    ClusterStateResponse,
+    IntegerParameter,
+    Parameters,
+)
 from cluster_config.types import ClusterConfig
 from config import settings
-from fastapi import APIRouter, Depends, Request, WebSocket, WebSocketDisconnect
+from exceptions import BeibootException
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, WebSocket, WebSocketDisconnect, status
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi_pagination import Page, Params, paginate
 from headers import user_headers
@@ -34,20 +42,19 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
-@router.get("/ws")
-async def get():
-    cluster_name = "test"
+@router.get("/ws/{cluster_name}")
+async def get(cluster_name: str):
     return HTMLResponse(
         f"""
         <!DOCTYPE html>
         <html>
             <head>
-                <title>Heartbeat</title>
+                <title>WebSocket</title>
             </head>
             <body>
-                <h1>WebSocket Heartbeat</h1>
+                <h1>WebSocket</h1>
                 <script>
-                    var ws = new WebSocket(`ws://localhost:8001/clusters/{cluster_name}/heartbeat`);
+                    var ws = new WebSocket(`ws://localhost:8000/clusters/{cluster_name}/heartbeat`);
                 </script>
             </body>
         </html>
@@ -55,26 +62,43 @@ async def get():
     )
 
 
-@router.get("/", response_model=Page[ClusterResponse])
-async def cluster_list(params: Params = Depends()) -> List[ClusterResponse]:
-    beiboots = api.read_all()
+@router.get("/", response_model=Page[ClusterStateResponse])
+async def cluster_list(params: Params = Depends()) -> List[ClusterStateResponse]:
+    try:
+        beiboots = api.read_all()
+    except Exception as e:
+        raise BeibootException(message="Beiboot Error", error=str(e))
 
     response = []
     for beiboot in beiboots:
-        response.append(ClusterResponse(name=beiboot.name, state=beiboot.state))
+        response.append(ClusterStateResponse(name=beiboot.name, state=beiboot.state))
 
     return paginate(response, params)
 
 
-@router.get("/{cluster_name}", response_model=ClusterResponse)
-async def cluster_info(cluster_name: str) -> ClusterResponse:
-    beiboot = api.read(name=cluster_name)
-    response = ClusterResponse(name=beiboot.name, state=beiboot.state)
+@router.get("/{cluster_name}", response_model=ClusterInfoResponse)
+async def cluster_info(cluster_name: str) -> ClusterInfoResponse:
+    try:
+        beiboot = api.read(name=cluster_name)
+    except Exception as e:
+        raise BeibootException(message="Beiboot Error", error=str(e))
+
+    response = ClusterInfoResponse(
+        name=beiboot.name,
+        namespace=beiboot.namespace,
+        state=beiboot.state,
+        parameters=[
+            IntegerParameter(
+                name=ClusterParameter.NODE_COUNT.value,
+                value=beiboot.parameters.nodes,
+            )
+        ],
+    )
     return response
 
 
-@router.post("/", response_model=ClusterResponse)
-async def cluster_create(request: ClusterRequest) -> ClusterResponse:
+@router.post("/", response_model=ClusterStateResponse)
+async def cluster_create(request: ClusterRequest) -> ClusterStateResponse:
     name = request.name
 
     # parameter validation via pydantic
@@ -84,8 +108,7 @@ async def cluster_create(request: ClusterRequest) -> ClusterResponse:
     try:
         parameters = Parameters(cluster_config=cluster_config, **tmp)
     except Exception as e:
-        # TODO: error response
-        raise e
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.errors())
 
     # cluster creation
     req = BeibootRequest(
@@ -98,29 +121,41 @@ async def cluster_create(request: ClusterRequest) -> ClusterResponse:
             maxSessionTimeout=parameters.session_timeout.value,
         ),
     )
-    beiboot = api.create(req=req)
+    try:
+        beiboot = api.create(req=req)
+    except Exception as e:
+        raise BeibootException(message="Beiboot Error", error=str(e))
 
-    response = ClusterResponse(name=beiboot.name, state=beiboot.state)
+    response = ClusterStateResponse(name=beiboot.name, state=beiboot.state)
     return response
 
 
-@router.delete("/{cluster_name}", response_model=ClusterResponse)
-async def cluster_delete(cluster_name: str) -> ClusterResponse:
-    api.delete_by_name(name=cluster_name)
-    return ClusterResponse(name=cluster_name, state=None)
+@router.delete("/{cluster_name}")
+async def cluster_delete(cluster_name: str) -> None:
+    try:
+        api.delete_by_name(name=cluster_name)
+    except RuntimeWarning as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+    except Exception as e:
+        raise BeibootException(message="Beiboot Error", error=str(e))
+
+    return Response(status_code=status.HTTP_202_ACCEPTED)
 
 
-@router.get("/{cluster_name}/heartbeat", response_model=ClusterResponse)
-async def cluster_state(request: Request, cluster_name: str) -> ClusterResponse:
+@router.get("/{cluster_name}/heartbeat", response_model=ClusterStateResponse)
+async def cluster_state(request: Request, cluster_name: str) -> ClusterStateResponse:
     x_forwarded_user = request.headers.get("X-Forwarded-User")
 
-    beiboot = api.read(name=cluster_name)
-    _ = api.write_heartbeat(
-        client_id=x_forwarded_user,
-        bbt=beiboot,
-    )
+    try:
+        beiboot = api.read(name=cluster_name)
+        _ = api.write_heartbeat(
+            client_id=x_forwarded_user,
+            bbt=beiboot,
+        )
+    except Exception as e:
+        raise BeibootException(message="Beiboot Error", error=str(e))
 
-    response = ClusterResponse(name=beiboot.name, state=beiboot.state)
+    response = ClusterStateResponse(name=beiboot.name, state=beiboot.state)
     return response
 
 
@@ -164,7 +199,11 @@ async def websocket_endpoint(websocket: WebSocket, cluster_name: str):
 
 @router.get("/{cluster_name}/kubeconfig")
 async def cluster_kubeconfig(cluster_name: str):
-    beiboot = api.read(name=cluster_name)
+    try:
+        beiboot = api.read(name=cluster_name)
+    except Exception as e:
+        raise BeibootException(message="Beiboot Error", error=str(e))
+
     kubeconfig = BytesIO(beiboot.kubeconfig.encode())
     return StreamingResponse(kubeconfig, media_type="application/yaml")
 

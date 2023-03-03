@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import ClassVar, Dict, List, Union
+from typing import Dict, List, Union
 
 from beiboot.types import BeibootState
 from cluster_config.types import ClusterConfig
@@ -74,6 +74,13 @@ class ClusterRequest(BaseModel):
     labels: Dict[str, str] = {}
 
 
-class ClusterResponse(BaseModel):
+class ClusterStateResponse(BaseModel):
     name: str
     state: BeibootState | None
+
+
+class ClusterInfoResponse(BaseModel):
+    name: str
+    namespace: str
+    state: BeibootState | None
+    parameters: List[Union[StringParameter, IntegerParameter]] | None
