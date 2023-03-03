@@ -17,7 +17,7 @@ from cluster.types import (
 from cluster_config.types import ClusterConfig
 from config import settings
 from exceptions import BeibootException
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, WebSocket, WebSocketDisconnect, status
+from fastapi import APIRouter, Body, Depends, HTTPException, Request, Response, WebSocket, WebSocketDisconnect, status
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi_pagination import Page, Params, paginate
 from headers import user_headers
@@ -98,7 +98,19 @@ async def cluster_info(cluster_name: str) -> ClusterInfoResponse:
 
 
 @router.post("/", response_model=ClusterStateResponse)
-async def cluster_create(request: ClusterRequest) -> ClusterStateResponse:
+async def cluster_create(
+    request: ClusterRequest = Body(
+        example={
+            "name": "hello",
+            "parameters": [
+                {
+                    "name": ClusterParameter.NODE_COUNT.value,
+                    "value": 1,
+                },
+            ],
+        },
+    )
+) -> ClusterStateResponse:
     name = request.name
 
     # parameter validation via pydantic

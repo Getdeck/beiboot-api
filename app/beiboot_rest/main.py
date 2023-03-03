@@ -56,7 +56,7 @@ async def beiboot_exception_handler(request: Request, exc: BeibootException):
 
     return JSONResponse(
         status_code=500,
-        content={"message": exc.message},
+        content={"msg": exc.message},
     )
 
 

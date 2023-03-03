@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Dict, List, Union
 
+import semver
 from beiboot.types import BeibootState
 from cluster_config.types import ClusterConfig
 from config import settings
@@ -54,14 +55,34 @@ class Parameters(BaseModel):
         cluster_config = ClusterConfig(**settings.dict())
         return cluster_config
 
+    @validator("k8s_version")
+    def k8s_version_validator(cls, v, *, values, **kwargs):
+        cluster_config = values["cluster_config"]
+
+        try:
+            ver = semver.VersionInfo.parse(v.value)
+        except TypeError:
+            raise ValueError(f"Invalid {ClusterParameter.K8S_VERSION.value}.")
+
+        if cluster_config.k8s_version_min > ver:
+            raise ValueError(f"Invalid {ClusterParameter.K8S_VERSION.value} - min: '{cluster_config.k8s_version_min}'.")
+
+        if cluster_config.k8s_version_max:
+            if cluster_config.k8s_version_max <= ver:
+                raise ValueError(
+                    f"Invalid {ClusterParameter.K8S_VERSION.value} - max: '{cluster_config.k8s_version_max}'."
+                )
+
+        return v
+
     @validator("node_count", always=True)
     def node_count_validator(cls, v, *, values, **kwargs):
         cluster_config = values["cluster_config"]
 
         if not v:
-            return IntegerParameter(name="node_count", value=cluster_config.node_count_minimum)
+            return IntegerParameter(name=ClusterParameter.NODE_COUNT.value, value=cluster_config.node_count_min)
 
-        if not cluster_config.node_count_minimum <= v.value <= (cluster_config.node_count_maximum or v.value):
+        if not cluster_config.node_count_min <= v.value <= (cluster_config.node_count_max or v.value):
             raise ValueError(f"Invalid {ClusterParameter.NODE_COUNT.value}.")
 
         return v
