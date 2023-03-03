@@ -1,9 +1,10 @@
 ARG PYTHON_VERSION="3.10"
-ARG POETRY_VERSION="1.3.2"
+ARG POETRY_VERSION="1.4.0"
 
 # base
-FROM python:${PYTHON_VERSION}-alpine AS base
-RUN apk update && apk upgrade
+FROM python:${PYTHON_VERSION}-slim AS base
+RUN apt-get update && apt-get upgrade -y \
+    && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 # requirement
 FROM python:${PYTHON_VERSION} AS requirement
