@@ -71,6 +71,7 @@ jobs:
       - name: Generate and Build
         working-directory: ./clients/typescript
         run: |
+          npm ci
           npm run generate-client
           npm run build
 
