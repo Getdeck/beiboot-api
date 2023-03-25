@@ -66,10 +66,11 @@ jobs:
         working-directory: ./clients/typescript
         run: docker run --user 0 quay.io/getdeck/beiboot-rest:latest bash -c "python get_openapi.py && cat openapi.json" > openapi_test.json
       - uses: actions/setup-node@v3
-        working-directory: ./clients/typescript
         with:
           node-version: 18
-      - run: npm ci
-      - run: npm run generate-client
-      - run: npm run build
+      - name: Generate and Build
+        working-directory: ./clients/typescript
+        run: |
+          npm run generate-client
+          npm run build
 
