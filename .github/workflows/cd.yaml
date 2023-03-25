@@ -52,14 +52,25 @@ jobs:
     runs-on: ubuntu-latest
     needs: publish-docker-image
     steps:
-      # - name: Checkout
-      #   uses: actions/checkout@v3
-      # - name: Setup QEMU
-      #   uses: docker/setup-qemu-action@v2
-      - run: echo ${{ needs.publish-docker-image.outputs.imageName }}
-      # - name: Login to quay.io
-      #   uses: docker/login-action@v1
-      #   with:
-      #     registry: quay.io
-      #     username: ${{ secrets.QUAY_ROBOT }}
-      #     password: ${{ secrets.QUAY_ROBOT_TOKEN }}
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Login to quay.io
+        uses: docker/login-action@v1
+        with:
+          registry: quay.io
+          username: ${{ secrets.QUAY_ROBOT }}
+          password: ${{ secrets.QUAY_ROBOT_TOKEN }}
+      - name: Get OpenAPI Schema
+        working-directory: ./clients/typescript
+        run: docker run --user 0 quay.io/getdeck/beiboot-rest:latest bash -c "python get_openapi.py && cat openapi.json" > openapi_test.json
+      - name: Build TS Client
+        working-directory: ./clients/typescript
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+        - run: npm ci
+        - run: npm run generate-client
+        - run: npm run build
+

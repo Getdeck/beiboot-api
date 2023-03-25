@@ -2,14 +2,17 @@
   "name": "beiboot-client",
   "version": "0.0.1",
   "description": "Typescript client for beiboot-rest",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "generate-client": "openapi --input ../../app/beiboot_rest/openapi.json --output ./src --client axios"
+    "generate-client": "openapi --input ./openapi.json --output ./src --client axios",
+    "build": "tsc"
   },
   "author": "",
   "license": "Apache-2.0",
   "devDependencies": {
-    "openapi-typescript-codegen": "^0.23.0"
+    "openapi-typescript-codegen": "^0.23.0",
+    "typescript": "^5.0.2"
   },
   "dependencies": {
     "axios": "^1.3.1"
