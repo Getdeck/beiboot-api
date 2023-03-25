@@ -65,9 +65,8 @@ jobs:
       - name: Get OpenAPI Schema
         working-directory: ./clients/typescript
         run: docker run --user 0 quay.io/getdeck/beiboot-rest:latest bash -c "python get_openapi.py && cat openapi.json" > openapi_test.json
-      - name: Build TS Client
+      - uses: actions/setup-node@v3
         working-directory: ./clients/typescript
-        uses: actions/setup-node@v3
         with:
           node-version: 18
       - run: npm ci
