@@ -14,6 +14,8 @@ concurrency:
 jobs:
   publish-docker-image:
     runs-on: ubuntu-latest
+    outputs: 
+      imageName: ${{ steps.image_metadata.outputs.tags }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -45,3 +47,18 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.image_metadata.outputs.tags }}
           cache-from: type=registry,ref=${{ steps.image_metadata.outputs.tags }}
+
+  bump-ts-client:
+    runs-on: ubuntu-latest
+    steps:
+      # - name: Checkout
+      #   uses: actions/checkout@v3
+      # - name: Setup QEMU
+      #   uses: docker/setup-qemu-action@v2
+      - run: echo ${{ needs.publish-docker-image.outputs.imageName }}
+      # - name: Login to quay.io
+      #   uses: docker/login-action@v1
+      #   with:
+      #     registry: quay.io
+      #     username: ${{ secrets.QUAY_ROBOT }}
+      #     password: ${{ secrets.QUAY_ROBOT_TOKEN }}
