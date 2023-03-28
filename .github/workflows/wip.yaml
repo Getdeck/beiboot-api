@@ -22,7 +22,7 @@ jobs:
           password: ${{ secrets.QUAY_ROBOT_TOKEN }}
       - name: Get OpenAPI Schema
         working-directory: ./clients/typescript
-        run: docker run --user 0 quay.io/getdeck/beiboot-rest:latest bash -c "python get_openapi.py && cat openapi.json" > openapi_test.json && ls
+        run: docker run --user 0 quay.io/getdeck/beiboot-rest:latest bash -c "python get_openapi.py && cat openapi.json" > openapi.json && ls
       - uses: actions/setup-node@v3
         with:
           node-version: 18
