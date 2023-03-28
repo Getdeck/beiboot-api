@@ -50,7 +50,7 @@ jobs:
 
   bump-ts-client:
     runs-on: ubuntu-latest
-    needs: publish-docker-image
+    # needs: publish-docker-image
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -64,7 +64,7 @@ jobs:
           password: ${{ secrets.QUAY_ROBOT_TOKEN }}
       - name: Get OpenAPI Schema
         working-directory: ./clients/typescript
-        run: docker run --user 0 quay.io/getdeck/beiboot-rest:latest bash -c "python get_openapi.py && cat openapi.json" > openapi_test.json
+        run: docker run --user 0 quay.io/getdeck/beiboot-rest:latest bash -c "python get_openapi.py && cat openapi.json" > openapi_test.json && ls
       - uses: actions/setup-node@v3
         with:
           node-version: 18
