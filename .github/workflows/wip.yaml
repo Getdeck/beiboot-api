@@ -33,4 +33,7 @@ jobs:
           npm ci
           npm run generate-client
           npm run build
-
+      - uses: JS-DevTools/npm-publish@v1
+        with:
+          package: ./clients/typescript/package.json
+          token: ${{ secrets.NPM_TOKEN }}
