@@ -1,6 +1,8 @@
 name: WIP
 
 on:
+  push:
+    branches: [typescript-client]
   workflow_dispatch: {}
 
 jobs:
