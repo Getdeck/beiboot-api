@@ -1,5 +1,5 @@
 from fastapi.openapi.utils import get_openapi
-from beiboot_rest import main
+import main
 import json
 
 with open("openapi.json", "w") as f:
