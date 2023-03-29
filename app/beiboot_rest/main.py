@@ -8,6 +8,8 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from routers import clusters, configs, connections, debug
 from routers.configs import update_cluster_config
+from sentry import sentry_setup
+from sentry_sdk import capture_exception
 
 logger = logging.getLogger("uvicorn.beiboot")
 
@@ -40,6 +42,9 @@ def setup_kubeconfig() -> None:
 
 @app.on_event("startup")
 async def startup_event():
+    # setup sentry
+    sentry_setup(dsn=settings.sentry_dsn, environment=settings.sentry_environment)
+
     # setup kubeconfig
     setup_kubeconfig()
 
@@ -52,7 +57,7 @@ async def startup_event():
 
 @app.exception_handler(BeibootException)
 async def beiboot_exception_handler(request: Request, exc: BeibootException):
-    # TODO: add error to sentry? -> exc.error
+    capture_exception(exc)  # sentry
 
     return JSONResponse(
         status_code=500,

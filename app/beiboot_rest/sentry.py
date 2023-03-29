@@ -1,19 +1,24 @@
 import logging
-from importlib import metadata
 
 import sentry_sdk
 
-logger = logging.getLogger()
+logger = logging.getLogger("uvicorn.beiboot")
 
 
-def sentry_setup(dsn: str, environment: str):
+def sentry_setup(dsn: str, environment: str) -> None:
     if not dsn:
-        return
+        return None
 
-    release = metadata.version("beiboot_rest")
+    try:
+        with open("version.txt") as file:
+            release = file.read()
+    except Exception:
+        release = "unknown"
 
     sentry_sdk.init(
         dsn=dsn,
         environment=environment,
         release=release,
     )
+
+    logger.info(f"Sentry setup: {dsn or '-'} ({environment or '-'}).")
