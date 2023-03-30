@@ -48,6 +48,9 @@ spec:
         - name: beiboot-api
           image: quay.io/getdeck/beiboot-rest:latest
           imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: beiboot-settings-config
           resources:
             requests:
               memory: "64Mi"
@@ -84,6 +87,12 @@ kind: ClusterRole
 metadata:
   name: getdeck:beiboot:api
 rules:
+  - apiGroups:
+      - "getdeck.dev"
+    resources:
+      - beiboots
+    verbs:
+      - "*"
   - apiGroups:
       - ""
     resources:
