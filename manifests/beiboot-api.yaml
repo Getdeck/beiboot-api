@@ -46,7 +46,7 @@ spec:
     spec:
       containers:
         - name: beiboot-api
-          image: quay.io/getdeck/beiboot-rest:latest
+          image: quay.io/getdeck/beiboot-api:latest
           imagePullPolicy: Always
           envFrom:
             - configMapRef:

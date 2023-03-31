@@ -1,0 +1,17 @@
+name: CI
+
+on:
+  push:
+    branches: ["*", "!main", "!develop"]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: "0 10 * * 1"
+  workflow_dispatch: {}
+
+jobs:
+  code-style:
+    uses: ./.github/workflows/code-style.yml
+
+  test:
+    uses: ./.github/workflows/test.yml

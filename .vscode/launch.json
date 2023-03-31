@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "module": "uvicorn",
-            "cwd": "${workspaceFolder}/app/beiboot_rest",
+            "cwd": "${workspaceFolder}/app/beiboot_api",
             "args": [
                 "main:app",
                 "--host",

@@ -1,7 +1,7 @@
 {
   "name": "beiboot-client",
   "version": "0.0.2",
-  "description": "Typescript client for beiboot-rest",
+  "description": "Typescript client for beiboot-api",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

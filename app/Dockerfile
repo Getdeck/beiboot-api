@@ -42,7 +42,7 @@ ENV PYTHONPATH="/app:${VENV_HOME}" \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-COPY beiboot_rest /app
+COPY beiboot_api /app
 WORKDIR /app
 
 RUN adduser --system --no-create-home user && chown -R user /app

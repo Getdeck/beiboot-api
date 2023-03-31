@@ -1,6 +1,6 @@
 # Getdeck Beiboot API Development
 
-This is the Beiboot REST API running as a side component for the Beiboot Operator. The Operator
+This is the Beiboot API running as a side component for the Beiboot Operator. The Operator
 contains the following components:
 
 - an object handler for _beiboot_ resources (CRD, see: https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/)
@@ -14,7 +14,7 @@ The Beiboot API is written using [FastAPI](https://fastapi.tiangolo.com/).
 
 ## Prerequisites
 
-It's simple to get started working on the REST API. You only need a Kubernetes cluster and the [Poetry](https://python-poetry.org/) environment.
+It's simple to get started working on the API. You only need a Kubernetes cluster and the [Poetry](https://python-poetry.org/) environment.
 
 ### Kubernetes for local development
 

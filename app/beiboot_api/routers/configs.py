@@ -35,8 +35,8 @@ async def config_list():
 
 @router.get("/default/refresh/")
 async def config_default_refresh():
-    default_rest_config = await config_refresh(name=settings.cc_default_name)
-    return default_rest_config
+    default_api_config = await config_refresh(name=settings.cc_default_name)
+    return default_api_config
 
 
 @router.get("/{config_name}/refresh/")
@@ -46,6 +46,6 @@ async def config_refresh(config_name: str):
     try:
         update_cluster_config(name=config_name)
     except Exception:
-        raise HTTPException(status_code=500, detail="Rest configmap error")
+        raise HTTPException(status_code=500, detail="API configmap error")
 
     return app.cluster_configs
