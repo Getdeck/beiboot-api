@@ -16,10 +16,12 @@ jobs:
     uses: ./.github/workflows/code-style.yml
 
   test:
+    needs: code-style
     uses: ./.github/workflows/test.yml
 
   publish-docker-image:
     runs-on: ubuntu-latest
+    needs: test
     outputs:
       imageName: ${{ steps.image_metadata.outputs.tags }}
     steps:

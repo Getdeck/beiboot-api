@@ -14,4 +14,5 @@ jobs:
     uses: ./.github/workflows/code-style.yml
 
   test:
+    needs: code-style
     uses: ./.github/workflows/test.yml
