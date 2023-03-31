@@ -1,29 +1,24 @@
 # beiboot-api
 
-WIP
-
-## development
-
-Install dependencies:
+In order to use the Beiboot API, apply the provided configuration and API resources to your Beiboot Cluster:
 
 ```bash
-pip install -e .
+kubectl apply -f manifests/<YOUR-SETTINGS>.yaml
 ```
-
-or
 
 ```bash
-poetry export -f requirements.txt --output requirements.dev.txt --without-hashes --with dev
+kubectl apply -f manifests/beiboot-api.yaml
 ```
 
-Build devcontainer:
+## Configuration
 
-```bash
-devcontainer build --no-cache --image-name "beiboot-api:devcontainer" --workspace-folder "."
-```
+The Beiboot API can be configured using a configmap. All available option are included in the [settings.example.yaml](manifests/settings.example.yaml).
 
-Start devcontainer with gefyra:
+## Cluster Config Parameter
 
-```bash
-gefyra run -i beiboot-api:devcontainer -n getdeck -N beiboot-api -v $(pwd):/workspace -c "/bin/sh -c 'while sleep 1000; do :; done'" --expose localhost:8000:8000
-```
+| Parameter         | Description         | Default  |
+| :---------------- | :------------------ | :------- |
+| `k8s_version_min` | Minimum k8s version | `1.24.0` |
+| `k8s_version_max` | Maximum k8s version | `None`   |
+| `node_count_min`  | Minimum node count  | `1`      |
+| `node_count_max`  | Maximum node count  | `3`      |

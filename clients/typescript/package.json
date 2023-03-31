@@ -1,5 +1,5 @@
 {
-  "name": "beiboot-client",
+  "name": "beiboot-api-client",
   "version": "0.1.0",
   "description": "Typescript client for beiboot-api",
   "main": "dist/index.js",
