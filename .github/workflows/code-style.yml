@@ -4,7 +4,7 @@ on:
   workflow_call: {}
 
 jobs:
-  test:
+  code-style:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

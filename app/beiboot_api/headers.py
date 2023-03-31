@@ -2,7 +2,7 @@ from fastapi import Header
 
 
 def user_headers(
-    x_forwarded_user: str | None = Header(),
+    x_forwarded_user: str | None = Header(default=None),
     x_forwarded_groups: str | None = Header(default=None),
     x_forwarded_email: str | None = Header(default=None),
     x_forwarded_preferred_username: str | None = Header(default=None),
