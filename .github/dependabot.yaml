@@ -1,0 +1,27 @@
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+      timezone: "Europe/Berlin"
+    labels:
+      - dependabot
+
+  - package-ecosystem: "pip"
+    directory: "/app"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+      timezone: "Europe/Berlin"
+    open-pull-requests-limit: 16
+    labels:
+      - dependabot
+
+  - package-ecosystem: "docker"
+    directory: "/app"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+      timezone: "Europe/Berlin"
