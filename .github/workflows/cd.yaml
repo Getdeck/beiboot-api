@@ -32,7 +32,7 @@ jobs:
           password: ${{ secrets.QUAY_ROBOT_TOKEN }}
       - name: Image Metadata
         id: image_metadata
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v4
         with:
           flavor: latest=false
           images: quay.io/getdeck/beiboot-rest
