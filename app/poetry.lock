@@ -382,14 +382,14 @@ test = ["anyio[trio] (>=3.2.1,<4.0.0)", "black (==23.1.0)", "coverage[toml] (>=6
 
 [[package]]
 name = "fastapi-pagination"
-version = "0.11.4"
+version = "0.12.1"
 description = "FastAPI pagination"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "fastapi_pagination-0.11.4-py3-none-any.whl", hash = "sha256:6d3e0d52e510cd58e68fa4699999e06abaf7062762af08dc3ce49939924cebbd"},
-    {file = "fastapi_pagination-0.11.4.tar.gz", hash = "sha256:9457b78cd5d0be590cbda506d5913f9d196a7b50768b7943cd0ad6a5f5aa090c"},
+    {file = "fastapi_pagination-0.12.1-py3-none-any.whl", hash = "sha256:214957a1ad7d4ca96d26867e7556b54c96e885676b698f9fe1e4c1e489bdfc63"},
+    {file = "fastapi_pagination-0.12.1.tar.gz", hash = "sha256:b8ef62be00fcafbb3dd82e7535e9eac689d9ea715c26f9a830f0ae7a2dc76eed"},
 ]
 
 [package.dependencies]
@@ -397,19 +397,19 @@ fastapi = ">=0.80.0"
 pydantic = ">=1.9.1"
 
 [package.extras]
-all = ["SQLAlchemy (>=1.3.20)", "asyncpg (>=0.24.0)", "beanie (>=1.11.9,<2.0.0)", "databases (>=0.6.0)", "django (<5.0.0)", "mongoengine (>=0.23.1,<0.27.0)", "motor (>=2.5.1,<4.0.0)", "orm (>=0.3.1)", "ormar (>=0.11.2)", "piccolo (>=0.89,<0.106)", "pony (>=0.7.16,<0.8.0)", "scylla-driver (>=3.25.6,<4.0.0)", "sqlakeyset (>=1.0.1659142803,<2.0.0)", "sqlmodel (>=0.0.8,<0.0.9)", "tortoise-orm (>=0.16.18,<0.20.0)"]
+all = ["SQLAlchemy (>=1.3.20)", "asyncpg (>=0.24.0)", "beanie (>=1.11.9,<2.0.0)", "databases (>=0.6.0)", "django (<5.0.0)", "mongoengine (>=0.23.1,<0.28.0)", "motor (>=2.5.1,<4.0.0)", "orm (>=0.3.1)", "ormar (>=0.11.2)", "piccolo (>=0.89,<0.110)", "pony (>=0.7.16,<0.8.0)", "scylla-driver (>=3.25.6,<4.0.0)", "sqlakeyset (>=2.0.1680321678,<3.0.0)", "sqlmodel (>=0.0.8,<0.0.9)", "tortoise-orm (>=0.16.18,<0.20.0)"]
 asyncpg = ["SQLAlchemy (>=1.3.20)", "asyncpg (>=0.24.0)"]
 beanie = ["beanie (>=1.11.9,<2.0.0)"]
 databases = ["databases (>=0.6.0)"]
 django = ["databases (>=0.6.0)", "django (<5.0.0)"]
-mongoengine = ["mongoengine (>=0.23.1,<0.27.0)"]
+mongoengine = ["mongoengine (>=0.23.1,<0.28.0)"]
 motor = ["motor (>=2.5.1,<4.0.0)"]
 orm = ["databases (>=0.6.0)", "orm (>=0.3.1)"]
 ormar = ["ormar (>=0.11.2)"]
-piccolo = ["piccolo (>=0.89,<0.106)"]
+piccolo = ["piccolo (>=0.89,<0.110)"]
 scylla-driver = ["scylla-driver (>=3.25.6,<4.0.0)"]
-sqlalchemy = ["SQLAlchemy (>=1.3.20)", "sqlakeyset (>=1.0.1659142803,<2.0.0)"]
-sqlmodel = ["sqlakeyset (>=1.0.1659142803,<2.0.0)", "sqlmodel (>=0.0.8,<0.0.9)"]
+sqlalchemy = ["SQLAlchemy (>=1.3.20)", "sqlakeyset (>=2.0.1680321678,<3.0.0)"]
+sqlmodel = ["sqlakeyset (>=2.0.1680321678,<3.0.0)", "sqlmodel (>=0.0.8,<0.0.9)"]
 tortoise = ["tortoise-orm (>=0.16.18,<0.20.0)"]
 
 [[package]]
@@ -1333,4 +1333,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "03d7f84183e10f6e47464072072ff1e0db200f031039e907d5fce816305a3bd7"
+content-hash = "21934faf41660000038bcb202c116f353a85bd69a8258a76d11bff7018962402"
