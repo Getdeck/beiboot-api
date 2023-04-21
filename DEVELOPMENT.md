@@ -36,7 +36,7 @@ Assuming you have Minikube installed, please run the following on your terminal:
 5. Store the Minikube _kubeconfig_ for later use in an application container with (working dir is _beiboot-api/app/_):
 
    ```bash
-   kubectl config view --flatten --minify > api/kubeconfig.yaml
+   kubectl config view --flatten --minify > app/beiboot_api/kubeconfig.yaml
    ```
 
 You can delete the Minikube cluster with `minikube delete`. Please find the Minikube docs for further assistance above.

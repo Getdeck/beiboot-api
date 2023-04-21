@@ -7,5 +7,9 @@
     "python.analysis.extraPaths": [
         "./app/beiboot_api"
     ],
-    "python.linting.enabled": false
+    "python.linting.enabled": false,
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "python.formatting.provider": "none"
 }

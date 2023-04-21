@@ -60,9 +60,9 @@ class Parameters(BaseModel):
         cluster_config = values["cluster_config"]
 
         try:
-            ver = semver.VersionInfo.parse(v.value)
-        except TypeError:
-            raise ValueError(f"Invalid {ClusterParameter.K8S_VERSION.value}.")
+            ver = semver.Version.parse(v.value)
+        except (TypeError, ValueError) as e:
+            raise type(e)(f"Invalid {ClusterParameter.K8S_VERSION.value}.")
 
         if cluster_config.k8s_version_min > ver:
             raise ValueError(f"Invalid {ClusterParameter.K8S_VERSION.value} - min: '{cluster_config.k8s_version_min}'.")
