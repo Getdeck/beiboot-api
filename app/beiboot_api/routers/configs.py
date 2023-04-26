@@ -1,9 +1,10 @@
 import logging
+from typing import Annotated
 
 import kubernetes as k8s
 import timeout_decorator
 from cluster_config.types import ClusterConfig
-from config import settings
+from config import Settings, get_settings
 from fastapi import APIRouter, Depends, HTTPException
 from headers import user_headers
 
@@ -13,8 +14,18 @@ router = APIRouter(prefix="/configs", tags=["configs"], dependencies=[Depends(us
 
 
 @timeout_decorator.timeout(5, timeout_exception=Exception)
-def update_cluster_config(name: str = settings.cc_default_name, namespace: str = settings.cc_default_namespace):
+def update_cluster_config(
+    settings: Annotated[Settings, Depends(get_settings)],
+    name: str | None = None,
+    namespace: str | None = None,
+):
     from main import app
+
+    if not name:
+        name = settings.cc_default_name
+
+    if not namespace:
+        namespace = settings.cc_default_namespace
 
     client = k8s.client.CoreV1Api()
     cm = client.read_namespaced_config_map(name=name, namespace=namespace)
@@ -34,7 +45,7 @@ async def config_list():
 
 
 @router.get("/default/refresh/")
-async def config_default_refresh():
+async def config_default_refresh(settings: Annotated[Settings, Depends(get_settings)]):
     default_api_config = await config_refresh(name=settings.cc_default_name)
     return default_api_config
 

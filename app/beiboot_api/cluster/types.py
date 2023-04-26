@@ -1,11 +1,11 @@
 from enum import Enum
-from typing import Dict, List, Union
+from typing import List, Union
 
-import semver
 from beiboot.types import BeibootState
 from cluster_config.types import ClusterConfig
-from config import settings
+from config import get_settings
 from pydantic import BaseModel, Field, validator
+from semver import Version
 
 
 class ClusterParameter(Enum):
@@ -52,6 +52,7 @@ class Parameters(BaseModel):
             return v
 
         # default cluster config
+        settings = get_settings()
         cluster_config = ClusterConfig(**settings.dict())
         return cluster_config
 
@@ -60,18 +61,15 @@ class Parameters(BaseModel):
         cluster_config = values["cluster_config"]
 
         try:
-            ver = semver.Version.parse(v.value)
+            _ = Version.parse(v.value)
         except (TypeError, ValueError) as e:
             raise type(e)(f"Invalid {ClusterParameter.K8S_VERSION.value}.")
 
-        if cluster_config.k8s_version_min > ver:
-            raise ValueError(f"Invalid {ClusterParameter.K8S_VERSION.value} - min: '{cluster_config.k8s_version_min}'.")
+        if not cluster_config.k8s_versions:
+            return v
 
-        if cluster_config.k8s_version_max:
-            if cluster_config.k8s_version_max <= ver:
-                raise ValueError(
-                    f"Invalid {ClusterParameter.K8S_VERSION.value} - max: '{cluster_config.k8s_version_max}'."
-                )
+        if v.value not in cluster_config.k8s_versions:
+            raise ValueError(f"Invalid {ClusterParameter.K8S_VERSION.value}: '{cluster_config.k8s_versions}'.")
 
         return v
 

@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 from cluster_config.types import ClusterConfig
 from pydantic import BaseSettings
 
@@ -17,4 +19,6 @@ class Settings(BaseSettings, ClusterConfig):
         env_file = ".env"
 
 
-settings = Settings()
+@lru_cache()
+def get_settings():
+    return Settings()

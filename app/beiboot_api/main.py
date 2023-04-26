@@ -1,10 +1,11 @@
 import logging
+from typing import Annotated
 
 import kubernetes as k8s
 import uvicorn
-from config import settings
+from config import Settings, get_settings
 from exceptions import BeibootException
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.responses import JSONResponse
 from routers import clusters, configs, connections, debug
 from routers.configs import update_cluster_config
@@ -18,7 +19,7 @@ app = FastAPI()
 app.cluster_configs = {}
 
 
-def setup_kubeconfig() -> None:
+def setup_kubeconfig(config_file: str) -> None:
     # incluster config
     try:
         k8s.config.load_incluster_config()
@@ -30,8 +31,8 @@ def setup_kubeconfig() -> None:
 
     # local config
     try:
-        k8s.config.load_kube_config(config_file=settings.k8s_config_file)
-        logger.info(f"Loaded local config: '{settings.k8s_config_file}'.")
+        k8s.config.load_kube_config(config_file=config_file)
+        logger.info(f"Loaded local config: '{config_file}'.")
     except k8s.config.ConfigException:
         pass
     else:
@@ -42,11 +43,13 @@ def setup_kubeconfig() -> None:
 
 @app.on_event("startup")
 async def startup_event():
+    settings = get_settings()
+
     # setup sentry
     sentry_setup(dsn=settings.sentry_dsn, environment=settings.sentry_environment)
 
     # setup kubeconfig
-    setup_kubeconfig()
+    setup_kubeconfig(config_file=settings.k8s_config_file)
 
     # setup cluster config
     try:

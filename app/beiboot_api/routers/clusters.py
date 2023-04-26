@@ -2,7 +2,7 @@ import asyncio
 import logging
 from datetime import datetime
 from io import BytesIO
-from typing import List
+from typing import Annotated, List
 
 from beiboot import api
 from beiboot.types import BeibootParameters, BeibootProvider, BeibootRequest
@@ -16,7 +16,7 @@ from cluster.types import (
     Parameters,
 )
 from cluster_config.types import ClusterConfig
-from config import settings
+from config import Settings, get_settings
 from exceptions import BeibootException
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, Response, WebSocket, WebSocketDisconnect, status
 from fastapi.responses import HTMLResponse, StreamingResponse
@@ -96,13 +96,14 @@ async def cluster_info(request: Request, cluster_name: str) -> ClusterInfoRespon
 @router.post("/", response_model=ClusterStateResponse)
 async def cluster_create(
     request: Request,
+    settings: Annotated[Settings, Depends(get_settings)],
     cluster_request: ClusterRequest = Body(
         example={
             "name": "hello",
             "parameters": [
                 {
                     "name": ClusterParameter.K8S_VERSION.value,
-                    "value": None,
+                    "value": "1.26.0",
                 },
                 {
                     "name": ClusterParameter.NODE_COUNT.value,

@@ -16,9 +16,8 @@ The Beiboot API can be configured using a configmap. All available option are in
 
 ## Cluster Config Parameter
 
-| Parameter         | Description         | Default  |
-| :---------------- | :------------------ | :------- |
-| `k8s_version_min` | Minimum k8s version | `1.24.0` |
-| `k8s_version_max` | Maximum k8s version | `None`   |
-| `node_count_min`  | Minimum node count  | `1`      |
-| `node_count_max`  | Maximum node count  | `3`      |
+| Parameter        | Description            | Type | Default | Example                                |
+| :--------------- | :--------------------- | :--- | :------ | :------------------------------------- |
+| `k8s_versions`   | Supported k8s versions | List | -       | `"1.26.0,1.26.1,1.26.2,1.26.3,1.27.0"` |
+| `node_count_min` | Minimum node count     | Int  | `1`     |                                        |
+| `node_count_max` | Maximum node count     | Int  | `3`     |                                        |
