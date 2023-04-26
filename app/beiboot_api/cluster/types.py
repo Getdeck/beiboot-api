@@ -88,11 +88,15 @@ class Parameters(BaseModel):
         return v
 
 
+class Labels(BaseModel):
+    user: str | None = None
+
+
 class ClusterRequest(BaseModel):
     name: str
     parameters: List[Union[StringParameter, IntegerParameter]] | None
     ports: List[str] | None
-    labels: Dict[str, str] = {}
+    labels: Labels | None
 
 
 class ClusterStateResponse(BaseModel):
