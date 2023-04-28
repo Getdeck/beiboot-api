@@ -15,13 +15,13 @@ from cluster.types import (
     Labels,
     Parameters,
 )
-from cluster_config.types import ClusterConfig
-from config import Settings, get_settings
+from config.types import Config
 from exceptions import BeibootException
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, Response, WebSocket, WebSocketDisconnect, status
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi_pagination import Page, Params, paginate
 from headers import user_headers
+from settings import Settings, get_settings
 
 logger = logging.getLogger("uvicorn.beiboot")
 
@@ -55,7 +55,7 @@ manager = ConnectionManager()
 @router.get("/", response_model=Page[ClusterStateResponse])
 async def cluster_list(request: Request, params: Params = Depends()) -> List[ClusterStateResponse]:
     try:
-        labels = Labels(user=request.headers.get("X-Forwarded-User"))
+        labels = Labels(user=request.state.user)
         beiboots = api.read_all(labels=labels.dict())
     except Exception as e:
         raise BeibootException(message="Beiboot Error", error=str(e))
@@ -69,7 +69,7 @@ async def cluster_list(request: Request, params: Params = Depends()) -> List[Clu
 
 @router.get("/{cluster_name}", response_model=ClusterInfoResponse)
 async def cluster_info(request: Request, cluster_name: str) -> ClusterInfoResponse:
-    labels = Labels(user=request.headers.get("X-Forwarded-User"))
+    labels = Labels(user=request.state.user)
 
     if not validate_cluster_name(labels=labels, cluster_name=cluster_name):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cluster not found")
@@ -116,7 +116,7 @@ async def cluster_create(
     name = cluster_request.name
 
     # parameter validation via pydantic
-    cluster_config = ClusterConfig(**settings.dict())
+    cluster_config = Config(**settings.dict())
     tmp = {str(parameter.name.value): parameter for parameter in cluster_request.parameters}
 
     try:
@@ -125,7 +125,7 @@ async def cluster_create(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.errors())
 
     # cluster creation
-    labels = Labels(user=request.headers.get("X-Forwarded-User"))
+    labels = Labels(user=request.state.user)
     req = BeibootRequest(
         name=name,
         provider=BeibootProvider.K3S,
@@ -148,7 +148,7 @@ async def cluster_create(
 
 @router.delete("/{cluster_name}")
 async def cluster_delete(request: Request, cluster_name: str) -> None:
-    labels = Labels(user=request.headers.get("X-Forwarded-User"))
+    labels = Labels(user=request.state.user)
 
     if not validate_cluster_name(labels=labels, cluster_name=cluster_name):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cluster not found")
@@ -165,12 +165,10 @@ async def cluster_delete(request: Request, cluster_name: str) -> None:
 
 @router.get("/{cluster_name}/heartbeat", response_model=ClusterStateResponse)
 async def cluster_state(request: Request, cluster_name: str) -> ClusterStateResponse:
-    x_forwarded_user = request.headers.get("X-Forwarded-User")
-
     try:
         beiboot = api.read(name=cluster_name)
         _ = api.write_heartbeat(
-            client_id=x_forwarded_user,
+            client_id=request.state.user,
             bbt=beiboot,
         )
     except Exception as e:
@@ -220,7 +218,7 @@ async def websocket_endpoint(websocket: WebSocket, cluster_name: str):
 
 @router.get("/{cluster_name}/kubeconfig")
 async def cluster_kubeconfig(request: Request, cluster_name: str):
-    labels = Labels(user=request.headers.get("X-Forwarded-User"))
+    labels = Labels(user=request.state.user)
 
     if not validate_cluster_name(labels=labels, cluster_name=cluster_name):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cluster not found")

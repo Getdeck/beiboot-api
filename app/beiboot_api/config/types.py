@@ -4,10 +4,10 @@ from pydantic import BaseModel, Field, validator
 from semver import Version
 
 
-class ClusterConfig(BaseModel):
-    k8s_versions: List[str] | None = Field(default="", env="cc_k8s_versions")
-    node_count_min: int | None = Field(default=1, env="cc_node_count_min")
-    node_count_max: int | None = Field(default=3, env="cc_node_count_max")
+class Config(BaseModel):
+    k8s_versions: List[str] | None = Field(default="", env="cd_k8s_versions")
+    node_count_min: int | None = Field(default=1, env="cd_node_count_min")
+    node_count_max: int | None = Field(default=3, env="cd_node_count_max")
 
     @validator("k8s_versions", pre=True)
     def k8s_versions_validator(cls, v):
@@ -30,3 +30,9 @@ class ClusterConfig(BaseModel):
         if v < 1:
             return 1
         return v
+
+
+class ConfigInfoResponse(BaseModel):
+    default: bool = True
+    name: str = "default"
+    config: Config | None

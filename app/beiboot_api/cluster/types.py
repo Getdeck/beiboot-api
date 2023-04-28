@@ -2,10 +2,10 @@ from enum import Enum
 from typing import List, Union
 
 from beiboot.types import BeibootState
-from cluster_config.types import ClusterConfig
-from config import get_settings
+from config.types import Config
 from pydantic import BaseModel, Field, validator
 from semver import Version
+from settings import get_settings
 
 
 class ClusterParameter(Enum):
@@ -28,7 +28,7 @@ class IntegerParameter(BaseModel):
 
 
 class Parameters(BaseModel):
-    cluster_config: ClusterConfig = None
+    cluster_config: Config = None
 
     k8s_version: StringParameter | None = Field(
         default=StringParameter(name=ClusterParameter.K8S_VERSION.value, value=None),
@@ -48,12 +48,12 @@ class Parameters(BaseModel):
 
     @validator("cluster_config", pre=True, always=True)
     def cluster_config_validator(cls, v):
-        if isinstance(v, ClusterConfig):
+        if isinstance(v, Config):
             return v
 
         # default cluster config
         settings = get_settings()
-        cluster_config = ClusterConfig(**settings.dict())
+        cluster_config = Config(**settings.dict())
         return cluster_config
 
     @validator("k8s_version")

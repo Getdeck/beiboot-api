@@ -5,15 +5,6 @@ metadata:
 
 ---
 apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: beiboot-api-config
-  namespace: getdeck
-data:
-  clusterLifetimeLimit: "1h"
-
----
-apiVersion: v1
 kind: Service
 metadata:
   name: beiboot-api
@@ -50,7 +41,7 @@ spec:
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
-                name: beiboot-settings-config
+                name: settings
           resources:
             requests:
               memory: "64Mi"

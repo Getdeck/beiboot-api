@@ -1,22 +1,33 @@
 import logging
-from typing import Annotated
 
 import kubernetes as k8s
-import uvicorn
-from config import Settings, get_settings
 from exceptions import BeibootException
-from fastapi import Depends, FastAPI, Request
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from routers import clusters, configs, connections, debug
-from routers.configs import update_cluster_config
 from sentry import sentry_setup
 from sentry_sdk import capture_exception
+from settings import get_settings
 
 logger = logging.getLogger("uvicorn.beiboot")
 
 
 app = FastAPI()
-app.cluster_configs = {}
+
+
+@app.middleware("http")
+async def user_middleware(request: Request, call_next):
+    # user
+    request.state.user = request.headers.get("X-Forwarded-User", None)
+
+    # groups
+    x_forwarded_groups = request.headers.get("X-Forwarded-Groups", None)
+    if type(x_forwarded_groups) == str:
+        x_forwarded_groups = x_forwarded_groups.replace("beiboot-api-", "").split(",")
+    request.state.groups = x_forwarded_groups
+
+    response = await call_next(request)
+    return response
 
 
 def setup_kubeconfig(config_file: str) -> None:
@@ -51,12 +62,6 @@ async def startup_event():
     # setup kubeconfig
     setup_kubeconfig(config_file=settings.k8s_config_file)
 
-    # setup cluster config
-    try:
-        update_cluster_config()
-    except Exception:
-        logger.error(f"Loading default configmap '{settings.cc_default_name}' failed.")
-
 
 @app.exception_handler(BeibootException)
 async def beiboot_exception_handler(request: Request, exc: BeibootException):
@@ -77,7 +82,3 @@ app.include_router(clusters.router)
 app.include_router(connections.router)
 app.include_router(configs.router)
 app.include_router(debug.router)
-
-
-def start():
-    uvicorn.run(app, host="0.0.0.0", port=8080, reload=True)

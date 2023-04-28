@@ -9,7 +9,7 @@ router = APIRouter(prefix="/debug", tags=["debug"])
 
 
 @router.get("/headers")
-async def get_headers(request: Request):
+async def get_headers(request: Request) -> JSONResponse:
     # user
     x_forwarded_user = request.headers.get("X-Forwarded-User", None)
     x_forwarded_groups = request.headers.get("X-Forwarded-Groups", None)

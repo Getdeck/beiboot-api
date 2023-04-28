@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-default # config-<ROLE>
+  namespace: getdeck
+data:
+  K8S_VERSIONS: "1.26.0,1.26.1,1.26.2,1.26.3,1.27.0"
+  NODE_COUNT_MIN: "1"
+  NODE_COUNT_MAX: "3"

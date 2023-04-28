@@ -1,62 +1,55 @@
 import logging
 from typing import Annotated
 
-import kubernetes as k8s
-import timeout_decorator
-from cluster_config.types import ClusterConfig
-from config import Settings, get_settings
-from fastapi import APIRouter, Depends, HTTPException
+from config.service import ConfigService, get_cluster_config_service
+from config.types import ConfigInfoResponse
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from headers import user_headers
+from settings import Settings, get_settings
 
 logger = logging.getLogger("uvicorn.beiboot")
 
 router = APIRouter(prefix="/configs", tags=["configs"], dependencies=[Depends(user_headers)])
 
 
-@timeout_decorator.timeout(5, timeout_exception=Exception)
-def update_cluster_config(
+@router.get("/default/")
+async def config_default(
+    request: Request,
     settings: Annotated[Settings, Depends(get_settings)],
-    name: str | None = None,
-    namespace: str | None = None,
+    handler: Annotated[ConfigService, Depends(get_cluster_config_service)],
+) -> ConfigInfoResponse:
+    cc = await config_custom(
+        request=request, config_name=settings.config_default_name, settings=settings, handler=handler
+    )
+
+    response = ConfigInfoResponse(
+        default=True,
+        name="default",
+        config=cc,
+    )
+    return response
+
+
+@router.get("/{config_name}/")
+async def config_custom(
+    request: Request,
+    config_name: str,
+    settings: Annotated[Settings, Depends(get_settings)],
+    handler: Annotated[ConfigService, Depends(get_cluster_config_service)],
 ):
-    from main import app
-
-    if not name:
-        name = settings.cc_default_name
-
-    if not namespace:
-        namespace = settings.cc_default_namespace
-
-    client = k8s.client.CoreV1Api()
-    cm = client.read_namespaced_config_map(name=name, namespace=namespace)
-
-    cc = {}
-    for item in ClusterConfig.__fields__:
-        cc[item] = cm.data.get(item.upper(), getattr(settings, item, None))
-
-    app.cluster_configs[name] = cc
-
-
-@router.get("/")
-async def config_list():
-    from main import app
-
-    return app.cluster_configs
-
-
-@router.get("/default/refresh/")
-async def config_default_refresh(settings: Annotated[Settings, Depends(get_settings)]):
-    default_api_config = await config_refresh(name=settings.cc_default_name)
-    return default_api_config
-
-
-@router.get("/{config_name}/refresh/")
-async def config_refresh(config_name: str):
-    from main import app
+    if config_name not in request.state.groups and config_name != settings.config_default_name:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
 
     try:
-        update_cluster_config(name=config_name)
+        cc = handler.get(prefix=settings.config_prefix, name=config_name, namespace=settings.config_default_namespace)
+    except ValueError:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     except Exception:
-        raise HTTPException(status_code=500, detail="API configmap error")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    return app.cluster_configs
+    response = ConfigInfoResponse(
+        default=False,
+        name=config_name,
+        config=cc,
+    )
+    return response
