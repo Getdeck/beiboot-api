@@ -363,18 +363,18 @@ test = ["anyio[trio] (>=3.2.1,<4.0.0)", "black (==23.1.0)", "coverage[toml] (>=6
 
 [[package]]
 name = "fastapi-pagination"
-version = "0.12.3"
+version = "0.12.4"
 description = "FastAPI pagination"
 category = "main"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "fastapi_pagination-0.12.3-py3-none-any.whl", hash = "sha256:fa9380d481499c3dd94e878d36cc399c67052c5372a0384e13c7a5251d1cb416"},
-    {file = "fastapi_pagination-0.12.3.tar.gz", hash = "sha256:914b3af4ffc1f002293bf38f1a6fa2cef96863d5742c033c20beb5baf1f2b3b3"},
+    {file = "fastapi_pagination-0.12.4-py3-none-any.whl", hash = "sha256:0d3d25f8a2adf7d35b8a1fb382cd41cad44aaba79f534da5b9c589328fd42465"},
+    {file = "fastapi_pagination-0.12.4.tar.gz", hash = "sha256:1e05e9801bce824b53ba983180e412c38c1d92f35db7ebb57d286a6bbe611461"},
 ]
 
 [package.dependencies]
-fastapi = ">=0.80.0"
+fastapi = ">=0.93.0"
 pydantic = ">=1.9.1"
 
 [package.extras]
@@ -1298,4 +1298,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "e98d6b584069f4f6e5ad0720f103d5f9ca654c858c9f225782c70cda5856e560"
+content-hash = "51963184f0f7c3f98ea9044926bec2615197b44d8362235088dfb10f9814aa24"
