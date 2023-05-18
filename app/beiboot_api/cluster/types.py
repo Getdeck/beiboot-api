@@ -1,3 +1,4 @@
+import re
 from enum import Enum
 from typing import List, Union
 
@@ -87,7 +88,17 @@ class Parameters(BaseModel):
 
 
 class Labels(BaseModel):
-    user: str | None = None
+    name: str | None
+    user: str | None
+
+    @validator("name", "user", always=True)
+    def label_validator(cls, v, *, values, **kwargs):
+        if not v:
+            return v
+
+        pattern = re.compile(r"(([A-Za-z0-9][-A-Za-z0-9_.]*)?[A-Za-z0-9])?")
+        if not re.fullmatch(pattern, v):
+            raise ValueError(f"Invalid value: '{v}' (regex used for validation is '{pattern.pattern}').")
 
 
 class ClusterRequest(BaseModel):
@@ -98,7 +109,8 @@ class ClusterRequest(BaseModel):
 
 
 class ClusterStateResponse(BaseModel):
-    name: str
+    id: str
+    name: str | None
     state: BeibootState | None
 
 
