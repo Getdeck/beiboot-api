@@ -5,7 +5,7 @@ from semver import Version
 
 
 class Config(BaseModel):
-    k8s_versions: List[str] | None = Field(default="", env="cd_k8s_versions")
+    k8s_versions: List[str] | None = Field(default=None, env="cd_k8s_versions")
     node_count_min: int | None = Field(default=1, env="cd_node_count_min")
     node_count_max: int | None = Field(default=3, env="cd_node_count_max")
 

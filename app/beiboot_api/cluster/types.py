@@ -100,6 +100,8 @@ class Labels(BaseModel):
         if not re.fullmatch(pattern, v):
             raise ValueError(f"Invalid value: '{v}' (regex used for validation is '{pattern.pattern}').")
 
+        return v
+
 
 class ClusterRequest(BaseModel):
     name: str

@@ -12,36 +12,46 @@ logger = logging.getLogger("uvicorn.beiboot")
 router = APIRouter(prefix="/configs", tags=["configs"], dependencies=[Depends(user_headers)])
 
 
+@router.get("/selected/")
+async def config_selected(
+    request: Request,
+    settings: Annotated[Settings, Depends(get_settings)],
+    handler: Annotated[ConfigService, Depends(get_cluster_config_service)],
+) -> ConfigInfoResponse:
+    for name in [request.state.group_selected, settings.config_default_name]:
+        try:
+            response = await config_custom(request=request, name=name, settings=settings, handler=handler)
+            return response
+        except Exception:
+            pass
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+
+
 @router.get("/default/")
 async def config_default(
     request: Request,
     settings: Annotated[Settings, Depends(get_settings)],
     handler: Annotated[ConfigService, Depends(get_cluster_config_service)],
 ) -> ConfigInfoResponse:
-    cc = await config_custom(
-        request=request, config_name=settings.config_default_name, settings=settings, handler=handler
-    )
-
-    response = ConfigInfoResponse(
-        default=True,
-        name="default",
-        config=cc,
+    response = await config_custom(
+        request=request, name=settings.config_default_name, settings=settings, handler=handler
     )
     return response
 
 
-@router.get("/{config_name}/")
+@router.get("/{name}/")
 async def config_custom(
     request: Request,
-    config_name: str,
+    name: str,
     settings: Annotated[Settings, Depends(get_settings)],
     handler: Annotated[ConfigService, Depends(get_cluster_config_service)],
 ):
-    if config_name not in request.state.groups and config_name != settings.config_default_name:
+    if name not in request.state.groups and name != settings.config_default_name:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
 
     try:
-        cc = handler.get(prefix=settings.config_prefix, name=config_name, namespace=settings.config_default_namespace)
+        cc = handler.get(prefix=settings.config_prefix, name=name, namespace=settings.config_default_namespace)
     except ValueError:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
     except Exception:
@@ -49,7 +59,7 @@ async def config_custom(
 
     response = ConfigInfoResponse(
         default=False,
-        name=config_name,
+        name=name,
         config=cc,
     )
     return response

@@ -1,8 +1,7 @@
 from functools import lru_cache
-from typing import List
 
 from config.types import Config
-from pydantic import BaseSettings, validator
+from pydantic import BaseSettings
 
 
 class Settings(BaseSettings, Config):
@@ -13,7 +12,7 @@ class Settings(BaseSettings, Config):
     sentry_environment: str | None
 
     # groups
-    groups: List[str] = ["admin", "user"]
+    group_default: str = "default"
 
     # config
     config_prefix: str = "config-"
@@ -22,12 +21,6 @@ class Settings(BaseSettings, Config):
 
     class Config:
         env_file = ".env"
-
-    @validator("groups", pre=True)
-    def groups_validator(cls, v):
-        if type(v) == str:
-            v = v.split(",")
-        return v
 
 
 @lru_cache()

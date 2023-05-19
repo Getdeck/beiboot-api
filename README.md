@@ -1,6 +1,6 @@
-# beiboot-api
+# Beiboot API
 
-In order to use the Beiboot API, apply the provided settings, configuration and API resources to your Beiboot Cluster:
+In order to make the Beiboot API available for your Beiboot Host Cluster, apply the provided settings, configuration and API resources:
 
 ```bash
 kubectl apply -f manifests/<SETTINGS>.yaml
@@ -10,9 +10,9 @@ kubectl apply -f manifests/<SETTINGS>.yaml
 kubectl apply -f manifests/beiboot-api.yaml
 ```
 
-## Configuration
+## API Settings
 
-The Beiboot API can be configured using a configmap. All available option are included in the [settings.example.yaml](manifests/settings.example.yaml).
+The settings of the API can be configured using a `ConfigMap` (see [settings.example.yaml](manifests/settings.example.yaml)).
 
 | Parameter                  | Description              | Type | Default          | Example |
 | :------------------------- | :----------------------- | :--- | :--------------- | :------ |
@@ -21,7 +21,24 @@ The Beiboot API can be configured using a configmap. All available option are in
 | `config_default_name`      | Default config name      | Str  | `config-default` |         |
 | `config_default_namespace` | Default config namespace | Str  | `getdeck`        |         |
 
-## Cluster Config Parameter
+## Groups
+
+Currently, the API supports the following fixed groups:
+
+- developer
+- free
+- (default)
+
+Only one of the listed groups is selected based on the following priority:
+
+`developer > free > default`
+
+A user will be assigned to the `default` group, if no group is provided within the header.
+Invalid group names are ignored.
+
+> **_NOTE:_** We plan to extend the group system later on in order to make it more flexible, including custom groups.
+
+## Group/Cluster Configuration
 
 | Parameter        | Description            | Type | Default | Example                                |
 | :--------------- | :--------------------- | :--- | :------ | :------------------------------------- |

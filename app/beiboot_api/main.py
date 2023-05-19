@@ -4,6 +4,7 @@ import kubernetes as k8s
 from exceptions import BeibootException
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from group import group_filter_and_selection
 from routers import clusters, configs, connections, debug
 from sentry import sentry_setup
 from sentry_sdk import capture_exception
@@ -22,9 +23,9 @@ async def user_middleware(request: Request, call_next):
 
     # groups
     x_forwarded_groups = request.headers.get("X-Forwarded-Groups", None)
-    if type(x_forwarded_groups) == str:
-        x_forwarded_groups = x_forwarded_groups.replace("beiboot-api-", "").split(",")
-    request.state.groups = x_forwarded_groups
+    groups_filtered, group_selected = group_filter_and_selection(x_forwarded_groups=x_forwarded_groups)
+    request.state.groups = groups_filtered
+    request.state.group_selected = group_selected
 
     response = await call_next(request)
     return response

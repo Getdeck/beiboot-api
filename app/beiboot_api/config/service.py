@@ -15,7 +15,7 @@ class ConfigService:
     def __init__(self, settings: Annotated[Settings, Depends(get_settings)]):
         self.settings = settings
 
-    @timeout_decorator.timeout(5, timeout_exception=Exception)
+    # @timeout_decorator.timeout(5, timeout_exception=Exception)
     def get(
         self,
         prefix: str | None = None,
