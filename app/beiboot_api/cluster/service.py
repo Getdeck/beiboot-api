@@ -52,15 +52,17 @@ class ClusterService:
         except Exception as e:
             raise ValueError(detail=e.errors())
 
-        # generate new cluster_id
-        cluster_id = self.create_new_cluster_id()
+        # generate new cluster_id + convert parameters
+        cluster_id = str(self.create_new_cluster_id())
+        ports = [str(port) for port in parameters.ports.value]
 
         # cluster creation
         req = BeibootRequest(
-            name=str(cluster_id),
+            name=cluster_id,
             provider=BeibootProvider.K3S,
             parameters=BeibootParameters(
                 k8sVersion=parameters.k8s_version.value,
+                ports=ports,
                 nodes=parameters.node_count.value,
                 maxLifetime=parameters.lifetime.value,
                 maxSessionTimeout=parameters.session_timeout.value,

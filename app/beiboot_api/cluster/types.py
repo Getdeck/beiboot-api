@@ -11,11 +11,17 @@ from settings import get_settings
 
 class ClusterParameter(Enum):
     K8S_VERSION = "K8S_VERSION"
+    PORTS = "PORTS"
     NODE_COUNT = "NODE_COUNT"
     LIFETIME = "LIFETIME"
     SESSION_TIMEOUT = "SESSION_TIMEOUT"
     # "SERVER_RESOURCES_REQUESTS_CPU"
     # "SERVER_RESOURCES_REQUESTS_MEMORY"
+
+
+class ListParameter(BaseModel):
+    name: ClusterParameter
+    value: List[int] | None
 
 
 class StringParameter(BaseModel):
@@ -34,6 +40,10 @@ class Parameters(BaseModel):
     k8s_version: StringParameter | None = Field(
         default=StringParameter(name=ClusterParameter.K8S_VERSION.value, value=None),
         alias=ClusterParameter.K8S_VERSION.value,
+    )
+    ports: ListParameter | None = Field(
+        default=ListParameter(name=ClusterParameter.PORTS.value, value=[6443, 80, 443]),
+        alias=ClusterParameter.PORTS.value,
     )
     node_count: IntegerParameter | None = Field(
         alias=ClusterParameter.NODE_COUNT.value,
@@ -74,6 +84,14 @@ class Parameters(BaseModel):
 
         return v
 
+    @validator("ports")
+    def ports_validator(cls, v, *, values, **kwargs):
+        if not v.value:
+            return None
+
+        v.value = list(set(v.value))
+        return v
+
     @validator("node_count", always=True)
     def node_count_validator(cls, v, *, values, **kwargs):
         cluster_config = values["cluster_config"]
@@ -105,8 +123,7 @@ class Labels(BaseModel):
 
 class ClusterRequest(BaseModel):
     name: str
-    parameters: List[Union[StringParameter, IntegerParameter]] | None
-    ports: List[str] | None
+    parameters: List[Union[ListParameter, StringParameter, IntegerParameter]] | None
     labels: Labels | None
 
 

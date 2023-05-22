@@ -35,5 +35,8 @@ async def ghostunnel(
     except Exception as e:
         raise BeibootException(message="Beiboot Error", error=str(e))
 
+    if not beiboot.mtls_files or not beiboot.tunnel:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Connection files not available.")
+
     response = GhostunnelResponse(mtls=beiboot.mtls_files, ports=beiboot.tunnel["ghostunnel"]["ports"])
     return response

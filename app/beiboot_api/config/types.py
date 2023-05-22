@@ -21,7 +21,7 @@ class Config(BaseModel):
             try:
                 _ = Version.parse(version)
             except TypeError:
-                raise ValueError("Invalid version.")
+                raise ValueError(f"Invalid version: '{version}'.")
 
         return v
 

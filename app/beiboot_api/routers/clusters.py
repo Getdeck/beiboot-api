@@ -94,6 +94,10 @@ async def cluster_create(
                     "value": "1.26.0",
                 },
                 {
+                    "name": ClusterParameter.PORTS.value,
+                    "value": [6443, 80, 443],
+                },
+                {
                     "name": ClusterParameter.NODE_COUNT.value,
                     "value": 1,
                 },
@@ -202,19 +206,22 @@ async def cluster_kubeconfig(
     except Exception as e:
         raise BeibootException(message="Beiboot Error", error=str(e))
 
+    if not beiboot.kubeconfig:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Kubeconfig not available.")
+
     kubeconfig = BytesIO(beiboot.kubeconfig.encode())
     return StreamingResponse(kubeconfig, media_type="application/yaml")
 
 
-@router.get("/{cluster_id}/parameters", response_model=Page[dict])
-async def cluster_parameters(cluster_id: str, params: Params = Depends()):
-    response = []
-    return paginate(response, params)
+# @router.get("/{cluster_id}/parameters", response_model=Page[dict])
+# async def cluster_parameters(cluster_id: str, params: Params = Depends()):
+#     response = []
+#     return paginate(response, params)
 
 
-@router.get("/{cluster_id}/parameters/{parameter_name}")
-async def cluster_parameter(cluster_id: str, parameter_name: str):
-    pass
+# @router.get("/{cluster_id}/parameters/{parameter_name}")
+# async def cluster_parameter(cluster_id: str, parameter_name: str):
+#     pass
 
 
 @router.get("/ws/{cluster_id}")
