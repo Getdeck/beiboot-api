@@ -21,7 +21,7 @@ class ClusterParameter(Enum):
 
 class ListParameter(BaseModel):
     name: ClusterParameter
-    value: List[int] | None
+    value: List[str] | None
 
 
 class StringParameter(BaseModel):
@@ -87,9 +87,19 @@ class Parameters(BaseModel):
     @validator("ports")
     def ports_validator(cls, v, *, values, **kwargs):
         if not v.value:
-            return None
+            return v
 
-        v.value = list(set(v.value))
+        for mapping in v.value:
+            try:
+                local, cluster = mapping.split(":")
+                local = int(local)
+                cluster = int(cluster)
+            except ValueError:
+                raise ValueError(f"Invalid {ClusterParameter.PORTS.value}: '{mapping}'.")
+
+            if local > 65535 or local <= 0 or cluster > 65535 or cluster <= 0:
+                ValueError(f"Invalid {ClusterParameter.PORTS.value}: '{mapping}'. Port out of range (0-65535).")
+
         return v
 
     @validator("node_count", always=True)

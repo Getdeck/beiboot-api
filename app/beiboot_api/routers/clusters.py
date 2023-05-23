@@ -95,7 +95,7 @@ async def cluster_create(
                 },
                 {
                     "name": ClusterParameter.PORTS.value,
-                    "value": [6443, 80, 443],
+                    "value": ["6443:6443", "80:80", "443:443"],
                 },
                 {
                     "name": ClusterParameter.NODE_COUNT.value,
