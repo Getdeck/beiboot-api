@@ -6,14 +6,7 @@ from typing import Annotated, List
 
 from beiboot import api
 from cluster.service import ClusterService, get_cluster_service
-from cluster.types import (
-    ClusterInfoResponse,
-    ClusterParameter,
-    ClusterRequest,
-    ClusterStateResponse,
-    IntegerParameter,
-    Labels,
-)
+from cluster.types import ClusterInfoResponse, ClusterParameter, ClusterRequest, ClusterStateResponse, Labels, NodeCount
 from exceptions import BeibootException
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, Response, WebSocket, WebSocketDisconnect, status
 from fastapi.responses import HTMLResponse, StreamingResponse
@@ -71,12 +64,7 @@ async def cluster_info(
         name=beiboot.name,
         namespace=beiboot.namespace,
         state=beiboot.state,
-        parameters=[
-            IntegerParameter(
-                name=ClusterParameter.NODE_COUNT.value,
-                value=beiboot.parameters.nodes,
-            )
-        ],
+        parameters=[NodeCount(value=beiboot.parameters.nodes)],
     )
     return response
 
@@ -100,6 +88,10 @@ async def cluster_create(
                 {
                     "name": ClusterParameter.NODE_COUNT.value,
                     "value": 1,
+                },
+                {
+                    "name": ClusterParameter.LIFETIME.value,
+                    "value": "1h",
                 },
             ],
         },

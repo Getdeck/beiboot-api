@@ -1,8 +1,10 @@
 import re
+from datetime import timedelta
 from enum import Enum
 from typing import List, Union
 
 from beiboot.types import BeibootState
+from cluster.helpers import convert_to_timedelta
 from config.types import Config
 from pydantic import BaseModel, Field, validator
 from semver import Version
@@ -19,43 +21,95 @@ class ClusterParameter(Enum):
     # "SERVER_RESOURCES_REQUESTS_MEMORY"
 
 
-class ListParameter(BaseModel):
+class Parameter(BaseModel):
     name: ClusterParameter
-    value: List[str] | None
+    value: Union[str, int, List[str], List[int]] | None
 
 
-class StringParameter(BaseModel):
-    name: ClusterParameter
+class K8sVersion(Parameter):
+    name: ClusterParameter = ClusterParameter.K8S_VERSION
     value: str | None
 
+    @validator("value")
+    def value_validator(cls, v, *, values, **kwargs):
+        if not v:
+            return v
 
-class IntegerParameter(BaseModel):
+        try:
+            _ = Version.parse(v)
+        except (TypeError, ValueError) as e:
+            raise type(e)(f"Invalid {ClusterParameter.K8S_VERSION.value}.")
+
+        return v
+
+
+class Ports(Parameter):
+    name: ClusterParameter = ClusterParameter.PORTS
+    value: List[str] | None
+
+    @validator("value")
+    def value_validator(cls, v, *, values, **kwargs):
+        if not v:
+            return v
+
+        for mapping in v:
+            try:
+                local, cluster = mapping.split(":")
+                local = int(local)
+                cluster = int(cluster)
+            except ValueError:
+                raise ValueError(f"Invalid {ClusterParameter.PORTS.value}: '{mapping}'.")
+
+            if local > 65535 or local <= 0 or cluster > 65535 or cluster <= 0:
+                ValueError(f"Invalid {ClusterParameter.PORTS.value}: '{mapping}'. Port out of range (0-65535).")
+
+        return v
+
+
+class NodeCount(Parameter):
     name: ClusterParameter
     value: int | None
+
+
+class Lifetime(Parameter):
+    name: ClusterParameter = ClusterParameter.LIFETIME
+    value: timedelta | None
+
+    @validator("value", pre=True)
+    def value_validator(cls, v, *, values, **kwargs):
+        if type(v) == timedelta:
+            return v
+
+        try:
+            td = convert_to_timedelta(v)
+        except ValueError:
+            raise ValueError(f"Invalid {ClusterParameter.LIFETIME.value}: '{v}'.")
+
+        return td
 
 
 class Parameters(BaseModel):
     cluster_config: Config = None
 
-    k8s_version: StringParameter | None = Field(
-        default=StringParameter(name=ClusterParameter.K8S_VERSION.value, value=None),
+    k8s_version: K8sVersion | None = Field(
+        default=K8sVersion(value=None),
         alias=ClusterParameter.K8S_VERSION.value,
     )
-    ports: ListParameter | None = Field(
-        default=ListParameter(name=ClusterParameter.PORTS.value, value=[6443, 80, 443]),
+    ports: Ports | None = Field(
+        default=Ports(value=["6443:6443", "80:80", "443:443"]),
         alias=ClusterParameter.PORTS.value,
     )
-    node_count: IntegerParameter | None = Field(
+    node_count: NodeCount | None = Field(
         alias=ClusterParameter.NODE_COUNT.value,
     )
-    lifetime: StringParameter | None = Field(
-        default=StringParameter(name=ClusterParameter.LIFETIME.value, value=None),
+    lifetime: Lifetime | None = Field(
+        default=Lifetime(value=timedelta(hours=1)),
         alias=ClusterParameter.LIFETIME.value,
     )
-    session_timeout: StringParameter | None = Field(
-        default=StringParameter(name=ClusterParameter.SESSION_TIMEOUT.value, value=None),
-        alias=ClusterParameter.SESSION_TIMEOUT.value,
-    )
+    # session_timeout: StringParameter | None = Field(
+    #     default=StringParameter(name=ClusterParameter.SESSION_TIMEOUT.value, value=None),
+    #     alias=ClusterParameter.SESSION_TIMEOUT.value,
+    # )
 
     @validator("cluster_config", pre=True, always=True)
     def cluster_config_validator(cls, v):
@@ -71,11 +125,6 @@ class Parameters(BaseModel):
     def k8s_version_validator(cls, v, *, values, **kwargs):
         cluster_config = values["cluster_config"]
 
-        try:
-            _ = Version.parse(v.value)
-        except (TypeError, ValueError) as e:
-            raise type(e)(f"Invalid {ClusterParameter.K8S_VERSION.value}.")
-
         if not cluster_config.k8s_versions:
             return v
 
@@ -84,33 +133,26 @@ class Parameters(BaseModel):
 
         return v
 
-    @validator("ports")
-    def ports_validator(cls, v, *, values, **kwargs):
-        if not v.value:
-            return v
-
-        for mapping in v.value:
-            try:
-                local, cluster = mapping.split(":")
-                local = int(local)
-                cluster = int(cluster)
-            except ValueError:
-                raise ValueError(f"Invalid {ClusterParameter.PORTS.value}: '{mapping}'.")
-
-            if local > 65535 or local <= 0 or cluster > 65535 or cluster <= 0:
-                ValueError(f"Invalid {ClusterParameter.PORTS.value}: '{mapping}'. Port out of range (0-65535).")
-
-        return v
-
     @validator("node_count", always=True)
     def node_count_validator(cls, v, *, values, **kwargs):
         cluster_config = values["cluster_config"]
 
         if not v:
-            return IntegerParameter(name=ClusterParameter.NODE_COUNT.value, value=cluster_config.node_count_min)
+            return NodeCount(value=cluster_config.node_count_min)
 
         if not cluster_config.node_count_min <= v.value <= (cluster_config.node_count_max or v.value):
             raise ValueError(f"Invalid {ClusterParameter.NODE_COUNT.value}.")
+
+        return v
+
+    @validator("lifetime", always=True)
+    def lifetime_validator(cls, v, *, values, **kwargs):
+        cluster_config = values["cluster_config"]
+
+        if not cluster_config.lifetime_limit >= v.value:
+            raise ValueError(
+                f"Invalid {ClusterParameter.LIFETIME.value}: '{v.value}'. Limit: {cluster_config.lifetime_limit}"
+            )
 
         return v
 
@@ -133,7 +175,7 @@ class Labels(BaseModel):
 
 class ClusterRequest(BaseModel):
     name: str
-    parameters: List[Union[ListParameter, StringParameter, IntegerParameter]] | None
+    parameters: List[Parameter] | None
     labels: Labels | None
 
 
@@ -147,4 +189,4 @@ class ClusterInfoResponse(BaseModel):
     name: str
     namespace: str
     state: BeibootState | None
-    parameters: List[Union[StringParameter, IntegerParameter]] | None
+    parameters: List[Parameter] | None

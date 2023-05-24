@@ -65,7 +65,6 @@ class ClusterService:
                 ports=ports,
                 nodes=parameters.node_count.value,
                 maxLifetime=parameters.lifetime.value,
-                maxSessionTimeout=parameters.session_timeout.value,
             ),
             labels=labels.dict(exclude_none=True),
         )
