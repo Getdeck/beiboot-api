@@ -40,11 +40,13 @@ Invalid group names are ignored.
 
 ## Group/Cluster Configuration
 
-| Parameter        | Description            | Type | Default | Example                                |
-| :--------------- | :--------------------- | :--- | :------ | :------------------------------------- |
-| `k8s_versions`   | Supported k8s versions | List | -       | `"1.26.0,1.26.1,1.26.2,1.26.3,1.27.0"` |
-| `node_count_min` | Minimum node count     | Int  | `1`     |                                        |
-| `node_count_max` | Maximum node count     | Int  | `3`     |                                        |
+| Parameter               | Description            | Type   | Default | Example                                |
+| :---------------------- | :--------------------- | :----- | :------ | :------------------------------------- |
+| `k8s_versions`          | Supported k8s versions | List   | -       | `"1.26.0,1.26.1,1.26.2,1.26.3,1.27.0"` |
+| `node_count_min`        | Minimum node count     | Int    | `1`     |                                        |
+| `node_count_max`        | Maximum node count     | Int    | `3`     |                                        |
+| `lifetime_limit`        | Cluster lifetime limit | String | `1h`    |                                        |
+| `session_timeout_limit` | Session timeout limit  | String | `30m`   |                                        |
 
 Alternatively to using a ConfigMap, default cluster config parameters can be set using an `.env` file, too. In order to work, all cluster config parameters have to be prefixed with `cd_`.
 
@@ -52,5 +54,7 @@ Alternatively to using a ConfigMap, default cluster config parameters can be set
 cd_k8s_versions="1.26.0,1.26.1,1.26.2,1.26.3,1.27.0"
 cd_node_count_min="1"
 cd_node_count_max="3"
+cd_lifetime_limit="1h"
+cd_session_timeout_limit="30m"
 ...
 ```
