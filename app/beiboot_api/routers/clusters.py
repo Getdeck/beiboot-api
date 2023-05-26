@@ -150,8 +150,8 @@ async def cluster_delete(
     return Response(status_code=status.HTTP_202_ACCEPTED)
 
 
-@router.get("/{cluster_id}/heartbeat", response_model=ClusterStateResponse)
-async def cluster_state(
+@router.post("/{cluster_id}/heartbeat", response_model=ClusterStateResponse)
+async def cluster_heartbeat(
     request: Request, cluster_id: str, handler: Annotated[ClusterService, Depends(get_cluster_service)]
 ) -> ClusterStateResponse:
     try:
