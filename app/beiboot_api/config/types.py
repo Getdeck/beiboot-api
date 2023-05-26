@@ -14,6 +14,7 @@ class Config(BaseModel):
     node_count_min: int | None = Field(default=1, env="cd_node_count_min")
     node_count_max: int | None = Field(default=3, env="cd_node_count_max")
     lifetime_limit: timedelta | None = Field(default=timedelta(hours=1), env="cd_lifetime_limit")
+    session_timeout_limit: timedelta | None = Field(default=timedelta(minutes=30), env="cd_session_timeout_limit")
 
     @validator("k8s_versions", pre=True)
     def k8s_versions_validator(cls, v):
@@ -37,16 +38,15 @@ class Config(BaseModel):
             return 1
         return v
 
-    @validator("lifetime_limit")
-    def lifetime_limit_validator(cls, v):
+    @validator("lifetime_limit", "session_timeout_limit")
+    def lifetime_limit_validator(cls, v, values, field):
         if type(v) == timedelta:
             return v
 
         try:
             td = convert_to_timedelta(v)
         except ValueError:
-            logger.warning(f"Invalid lifetime_limit: '{v}'. Setting value to '1h'.")
-            td = timedelta(hours=1)
+            logger.warning(f"Invalid {field.name}: '{v}'.")
 
         return td
 

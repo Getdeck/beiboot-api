@@ -30,10 +30,11 @@ async def ghostunnel(
     try:
         labels = Labels(user=request.state.user)
         beiboot = handler.get(cluster_id=cluster_id, labels=labels)
-        if not beiboot:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="cluster id unknown")
     except Exception as e:
         raise BeibootException(message="Beiboot Error", error=str(e))
+
+    if not beiboot:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cluster not found.")
 
     if not beiboot.mtls_files or not beiboot.tunnel:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Connection files not available.")

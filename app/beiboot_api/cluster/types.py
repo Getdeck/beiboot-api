@@ -31,7 +31,7 @@ class K8sVersion(Parameter):
     value: str | None
 
     @validator("value")
-    def value_validator(cls, v, *, values, **kwargs):
+    def value_validator(cls, v):
         if not v:
             return v
 
@@ -48,7 +48,7 @@ class Ports(Parameter):
     value: List[str] | None
 
     @validator("value")
-    def value_validator(cls, v, *, values, **kwargs):
+    def value_validator(cls, v):
         if not v:
             return v
 
@@ -63,29 +63,45 @@ class Ports(Parameter):
             if local > 65535 or local <= 0 or cluster > 65535 or cluster <= 0:
                 ValueError(f"Invalid {ClusterParameter.PORTS.value}: '{mapping}'. Port out of range (0-65535).")
 
+        # remove duplicates + 6443:6443
+        v = list(set(v))
+        if "6443:6443" in v:
+            v.remove("6443:6443")
+
         return v
 
 
 class NodeCount(Parameter):
-    name: ClusterParameter
+    name: ClusterParameter = ClusterParameter.NODE_COUNT
     value: int | None
 
 
 class Lifetime(Parameter):
     name: ClusterParameter = ClusterParameter.LIFETIME
-    value: timedelta | None
+    value: str | None
 
     @validator("value", pre=True)
-    def value_validator(cls, v, *, values, **kwargs):
-        if type(v) == timedelta:
-            return v
-
+    def value_validator(cls, v):
         try:
-            td = convert_to_timedelta(v)
+            _ = convert_to_timedelta(v)
         except ValueError:
             raise ValueError(f"Invalid {ClusterParameter.LIFETIME.value}: '{v}'.")
 
-        return td
+        return v
+
+
+class SessionTimeout(Parameter):
+    name: ClusterParameter = ClusterParameter.SESSION_TIMEOUT
+    value: str | None
+
+    @validator("value", pre=True)
+    def value_validator(cls, v):
+        try:
+            _ = convert_to_timedelta(v)
+        except ValueError:
+            raise ValueError(f"Invalid {ClusterParameter.SESSION_TIMEOUT.value}: '{v}'.")
+
+        return v
 
 
 class Parameters(BaseModel):
@@ -96,20 +112,20 @@ class Parameters(BaseModel):
         alias=ClusterParameter.K8S_VERSION.value,
     )
     ports: Ports | None = Field(
-        default=Ports(value=["6443:6443", "80:80", "443:443"]),
+        default=Ports(value=["80:80", "443:443"]),
         alias=ClusterParameter.PORTS.value,
     )
     node_count: NodeCount | None = Field(
         alias=ClusterParameter.NODE_COUNT.value,
     )
     lifetime: Lifetime | None = Field(
-        default=Lifetime(value=timedelta(hours=1)),
+        default=Lifetime(value="1h"),
         alias=ClusterParameter.LIFETIME.value,
     )
-    # session_timeout: StringParameter | None = Field(
-    #     default=StringParameter(name=ClusterParameter.SESSION_TIMEOUT.value, value=None),
-    #     alias=ClusterParameter.SESSION_TIMEOUT.value,
-    # )
+    session_timeout: SessionTimeout | None = Field(
+        default=SessionTimeout(value="5m"),
+        alias=ClusterParameter.SESSION_TIMEOUT.value,
+    )
 
     @validator("cluster_config", pre=True, always=True)
     def cluster_config_validator(cls, v):
@@ -149,9 +165,20 @@ class Parameters(BaseModel):
     def lifetime_validator(cls, v, *, values, **kwargs):
         cluster_config = values["cluster_config"]
 
-        if not cluster_config.lifetime_limit >= v.value:
+        if not cluster_config.lifetime_limit >= convert_to_timedelta(v.value):
             raise ValueError(
                 f"Invalid {ClusterParameter.LIFETIME.value}: '{v.value}'. Limit: {cluster_config.lifetime_limit}"
+            )
+
+        return v
+
+    @validator("session_timeout", always=True)
+    def session_timeout_validator(cls, v, *, values, **kwargs):
+        cluster_config = values["cluster_config"]
+
+        if not cluster_config.session_timeout_limit >= convert_to_timedelta(v.value):
+            raise ValueError(
+                f"Invalid {ClusterParameter.SESSION_TIMEOUT.value}: '{v.value}'. Limit: {cluster_config.session_timeout_limit}"
             )
 
         return v
@@ -186,7 +213,8 @@ class ClusterStateResponse(BaseModel):
 
 
 class ClusterInfoResponse(BaseModel):
-    name: str
+    id: str
+    name: str | None
     namespace: str
     state: BeibootState | None
     parameters: List[Parameter] | None

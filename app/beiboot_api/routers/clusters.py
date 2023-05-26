@@ -6,7 +6,18 @@ from typing import Annotated, List
 
 from beiboot import api
 from cluster.service import ClusterService, get_cluster_service
-from cluster.types import ClusterInfoResponse, ClusterParameter, ClusterRequest, ClusterStateResponse, Labels, NodeCount
+from cluster.types import (
+    ClusterInfoResponse,
+    ClusterParameter,
+    ClusterRequest,
+    ClusterStateResponse,
+    K8sVersion,
+    Labels,
+    Lifetime,
+    NodeCount,
+    Ports,
+    SessionTimeout,
+)
 from exceptions import BeibootException
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, Response, WebSocket, WebSocketDisconnect, status
 from fastapi.responses import HTMLResponse, StreamingResponse
@@ -60,11 +71,21 @@ async def cluster_info(
     except Exception as e:
         raise BeibootException(message="Beiboot Error", error=str(e))
 
+    if not beiboot:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cluster not found.")
+
     response = ClusterInfoResponse(
-        name=beiboot.name,
+        id=beiboot.name,
+        name=beiboot.labels.get("name"),
         namespace=beiboot.namespace,
         state=beiboot.state,
-        parameters=[NodeCount(value=beiboot.parameters.nodes)],
+        parameters=[
+            K8sVersion(value=beiboot.parameters.k8sVersion),
+            Ports(value=beiboot.parameters.ports),
+            NodeCount(value=beiboot.parameters.nodes),
+            Lifetime(value=beiboot.parameters.maxLifetime),
+            SessionTimeout(value=beiboot.parameters.maxSessionTimeout),
+        ],
     )
     return response
 
@@ -83,7 +104,7 @@ async def cluster_create(
                 },
                 {
                     "name": ClusterParameter.PORTS.value,
-                    "value": ["6443:6443", "80:80", "443:443"],
+                    "value": ["80:80", "443:443"],
                 },
                 {
                     "name": ClusterParameter.NODE_COUNT.value,
@@ -92,6 +113,10 @@ async def cluster_create(
                 {
                     "name": ClusterParameter.LIFETIME.value,
                     "value": "1h",
+                },
+                {
+                    "name": ClusterParameter.SESSION_TIMEOUT.value,
+                    "value": "5m",
                 },
             ],
         },
@@ -131,15 +156,16 @@ async def cluster_state(
 ) -> ClusterStateResponse:
     try:
         beiboot = handler.get(cluster_id=cluster_id)
-        if not beiboot:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="cluster id unknown")
-
-        _ = api.write_heartbeat(
-            client_id=request.state.user,
-            bbt=beiboot,
-        )
     except Exception as e:
         raise BeibootException(message="Beiboot Error", error=str(e))
+
+    if not beiboot:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cluster not found.")
+
+    _ = api.write_heartbeat(
+        client_id=request.state.user,
+        bbt=beiboot,
+    )
 
     response = ClusterStateResponse(id=beiboot.name, name=beiboot.labels.get("name"), state=beiboot.state)
     return response
@@ -162,6 +188,9 @@ async def websocket_endpoint(
     except RuntimeError:
         manager.disconnect(websocket)
         raise Exception("Invalid 'cluster_id'.")
+
+    if not beiboot:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cluster not found.")
 
     try:
         while True:
@@ -193,10 +222,11 @@ async def cluster_kubeconfig(
     try:
         labels = Labels(user=request.state.user)
         beiboot = handler.get(cluster_id=cluster_id, labels=labels)
-        if not beiboot:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="cluster id unknown")
     except Exception as e:
         raise BeibootException(message="Beiboot Error", error=str(e))
+
+    if not beiboot:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cluster not found.")
 
     if not beiboot.kubeconfig:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Kubeconfig not available.")
