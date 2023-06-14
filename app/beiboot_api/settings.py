@@ -15,7 +15,7 @@ class Settings(BaseSettings, Config):
     group_default: str = "default"
 
     # config
-    config_prefix: str = "config-"
+    config_prefix: str = "api-config-"
     config_default_name: str = "default"
     config_default_namespace: str = "getdeck"
 

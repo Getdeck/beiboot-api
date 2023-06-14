@@ -7,37 +7,37 @@ metadata:
 apiVersion: v1
 kind: Service
 metadata:
-  name: beiboot-api
+  name: api
   namespace: getdeck
 spec:
   ports:
     - port: 80
       protocol: TCP
-      targetPort: http-bbt-svc
+      targetPort: http-api-svc
   selector:
-    app: beiboot-api
+    app: api
 
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: beiboot-api
-  name: beiboot-api
+    app: api
+  name: api
   namespace: getdeck
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: beiboot-api
+      app: api
   template:
     metadata:
       labels:
-        app: beiboot-api
+        app: api
     spec:
       containers:
-        - name: beiboot-api
-          image: quay.io/getdeck/beiboot-api:latest
+        - name: api
+          image: quay.io/getdeck/api:latest
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -49,7 +49,7 @@ spec:
             limits:
               memory: "128Mi"
           ports:
-            - name: http-bbt-svc
+            - name: http-api-svc
               containerPort: 8080
           livenessProbe:
             httpGet:
@@ -63,20 +63,20 @@ spec:
               port: 8080
             initialDelaySeconds: 3
             periodSeconds: 3
-      serviceAccountName: beiboot-api
+      serviceAccountName: api
 
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: beiboot-api
+  name: api
   namespace: getdeck
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: getdeck:beiboot:api
+  name: getdeck:api
 rules:
   - apiGroups:
       - "getdeck.dev"
@@ -89,19 +89,20 @@ rules:
     resources:
       - configmaps
     verbs:
+      - get
       - patch
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: getdeck-beiboot-api
+  name: getdeck-api
   namespace: getdeck
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: getdeck:beiboot:api
+  name: getdeck:api
 subjects:
   - kind: ServiceAccount
-    name: beiboot-api
+    name: api
     namespace: getdeck

@@ -1,4 +1,4 @@
-from beiboot_api.group import group_filter_and_selection
+from group import group_filter_and_selection
 
 
 class TestGroup:

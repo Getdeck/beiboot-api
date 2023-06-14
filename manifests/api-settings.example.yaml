@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: settings
+  name: api-settings
   namespace: getdeck
 data:
   SENTRY_DSN: ""

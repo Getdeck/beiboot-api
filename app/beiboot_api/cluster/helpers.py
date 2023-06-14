@@ -19,4 +19,7 @@ def convert_to_timedelta(value: str) -> timedelta:
     if not bool(td):
         ValueError("Invalid format.")
 
+    if td.total_seconds() == 0:
+        raise ValueError("Invalid value.")
+
     return td

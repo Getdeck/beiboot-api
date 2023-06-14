@@ -40,7 +40,7 @@ class ClusterService:
         else:
             return None
 
-    def create(self, request: Request, cluster_request: ClusterRequest) -> Beiboot:
+    def create(self, request: Request, cluster_request: ClusterRequest) -> Beiboot:  # noqa: C901
         # validate labels + parameters
         labels = Labels(name=cluster_request.name, user=request.state.user)
 
@@ -56,6 +56,36 @@ class ClusterService:
         cluster_id = str(self.create_new_cluster_id())
         ports = [str(port) for port in parameters.ports.value]
 
+        serverResources = {}
+        if parameters.server_resources_requests_cpu.value or parameters.server_resources_requests_memory.value:
+            serverResources["requests"] = {}
+            if parameters.server_resources_requests_cpu.value:
+                serverResources["requests"]["cpu"] = parameters.server_resources_requests_cpu.value
+            if parameters.server_resources_requests_memory.value:
+                serverResources["requests"]["memory"] = parameters.server_resources_requests_memory.value
+
+        if parameters.server_resources_limits_cpu.value or parameters.server_resources_limits_memory.value:
+            serverResources["limits"] = {}
+            if parameters.server_resources_limits_cpu.value:
+                serverResources["limits"]["cpu"] = parameters.server_resources_limits_cpu.value
+            if parameters.server_resources_limits_memory.value:
+                serverResources["limits"]["memory"] = parameters.server_resources_limits_memory.value
+
+        nodeResources = {}
+        if parameters.node_resources_requests_cpu.value or parameters.node_resources_requests_memory.value:
+            nodeResources["requests"] = {}
+            if parameters.node_resources_requests_cpu.value:
+                nodeResources["requests"]["cpu"] = parameters.node_resources_requests_cpu.value
+            if parameters.node_resources_requests_memory.value:
+                nodeResources["requests"]["memory"] = parameters.node_resources_requests_memory.value
+
+        if parameters.node_resources_limits_cpu.value or parameters.node_resources_limits_memory.value:
+            nodeResources["limits"] = {}
+            if parameters.node_resources_limits_cpu.value:
+                nodeResources["limits"]["cpu"] = parameters.node_resources_limits_cpu.value
+            if parameters.node_resources_limits_memory.value:
+                nodeResources["limits"]["memory"] = parameters.node_resources_limits_memory.value
+
         # cluster creation
         req = BeibootRequest(
             name=cluster_id,
@@ -66,6 +96,19 @@ class ClusterService:
                 nodes=parameters.node_count.value,
                 maxLifetime=parameters.lifetime.value,
                 maxSessionTimeout=parameters.session_timeout.value,
+                clusterReadyTimeout=parameters.cluster_ready_timeout.value,
+                serverResources=serverResources,
+                nodeResources=nodeResources,
+                serverStorageRequests=parameters.server_storage_requests.value,
+                nodeStorageRequests=parameters.node_storage_requests.value,
+                gefyra={
+                    "enabled": parameters.gefyra_enabled.value,
+                    "endpoint": parameters.gefyra_endpoint.value,
+                },
+                tunnel={
+                    "enabled": parameters.tunnel_enabled.value,
+                    "endpoint": parameters.tunnel_endpoint.value,
+                },
             ),
             labels=labels.dict(exclude_none=True),
         )

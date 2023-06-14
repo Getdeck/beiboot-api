@@ -9,14 +9,29 @@ from cluster.service import ClusterService, get_cluster_service
 from cluster.types import (
     ClusterInfoResponse,
     ClusterParameter,
+    ClusterReadyTimeout,
     ClusterRequest,
     ClusterStateResponse,
+    GefyraEnabled,
+    GefyraEndpoint,
     K8sVersion,
     Labels,
     Lifetime,
     NodeCount,
+    NodeResourcesLimitsCpu,
+    NodeResourcesLimitsMemory,
+    NodeResourcesRequestsCpu,
+    NodeResourcesRequestsMemory,
+    NodeStorageRequests,
     Ports,
+    ServerResourcesLimitsCpu,
+    ServerResourcesLimitsMemory,
+    ServerResourcesRequestsCpu,
+    ServerResourcesRequestsMemory,
+    ServerStorageRequests,
     SessionTimeout,
+    TunnelEnabled,
+    TunnelEndpoint,
 )
 from exceptions import BeibootException
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, Response, WebSocket, WebSocketDisconnect, status
@@ -74,18 +89,45 @@ async def cluster_info(
     if not beiboot:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cluster not found.")
 
+    # parameters
+    parameters = [
+        K8sVersion(value=beiboot.parameters.k8sVersion),
+        Ports(value=beiboot.parameters.ports),
+        NodeCount(value=beiboot.parameters.nodes),
+        Lifetime(value=beiboot.parameters.maxLifetime),
+        SessionTimeout(value=beiboot.parameters.maxSessionTimeout),
+        ClusterReadyTimeout(value=beiboot.parameters.clusterReadyTimeout),
+        ServerResourcesRequestsCpu(value=beiboot.parameters.serverResources.get("requests", {}).get("cpu")),
+        ServerResourcesRequestsMemory(value=beiboot.parameters.serverResources.get("requests", {}).get("memory")),
+        ServerResourcesLimitsCpu(value=beiboot.parameters.serverResources.get("limits", {}).get("cpu")),
+        ServerResourcesLimitsMemory(value=beiboot.parameters.serverResources.get("limits", {}).get("memory")),
+        ServerStorageRequests(value=beiboot.parameters.serverStorageRequests),
+        NodeResourcesRequestsCpu(value=beiboot.parameters.nodeResources.get("requests", {}).get("cpu")),
+        NodeResourcesRequestsMemory(value=beiboot.parameters.nodeResources.get("requests", {}).get("memory")),
+        NodeResourcesLimitsCpu(value=beiboot.parameters.nodeResources.get("limits", {}).get("cpu")),
+        NodeResourcesLimitsMemory(value=beiboot.parameters.nodeResources.get("limits", {}).get("memory")),
+        NodeStorageRequests(value=beiboot.parameters.nodeStorageRequests),
+        GefyraEnabled(value=beiboot.parameters.gefyra.get("enabled")),
+        GefyraEndpoint(value=beiboot.parameters.gefyra.get("endpoint")),
+        TunnelEnabled(value=beiboot.parameters.tunnel.get("enabled")),
+        TunnelEndpoint(value=beiboot.parameters.tunnel.get("endpoint")),
+    ]
+
+    # filter parameters with empty values
+    parameters_filtered = [parameter for parameter in parameters if parameter.value is not None]
+
+    if beiboot.sunset:
+        sunset = datetime.strptime(beiboot.sunset, "%Y-%m-%dT%H:%M:%S.%fZ")
+    else:
+        sunset = None
+
     response = ClusterInfoResponse(
         id=beiboot.name,
         name=beiboot.labels.get("name"),
         namespace=beiboot.namespace,
         state=beiboot.state,
-        parameters=[
-            K8sVersion(value=beiboot.parameters.k8sVersion),
-            Ports(value=beiboot.parameters.ports),
-            NodeCount(value=beiboot.parameters.nodes),
-            Lifetime(value=beiboot.parameters.maxLifetime),
-            SessionTimeout(value=beiboot.parameters.maxSessionTimeout),
-        ],
+        sunset=sunset,
+        parameters=parameters_filtered,
     )
     return response
 

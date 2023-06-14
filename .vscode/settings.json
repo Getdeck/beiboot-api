@@ -1,8 +1,8 @@
 {
     "python.testing.pytestArgs": [
-        "app",
-        "--timeout=0"
+        ".",
     ],
+    "python.testing.cwd": "./app/beiboot_api",
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.analysis.extraPaths": [
