@@ -3,14 +3,14 @@ from group import group_filter_and_selection
 
 class TestGroup:
     def test_list(self):
-        x_forwarded_groups = "beiboot-api-developer,beiboot-api-free"
+        x_forwarded_groups = "getdeck-api-developer,getdeck-api-free"
         groups_filtered, group_selected = group_filter_and_selection(x_forwarded_groups=x_forwarded_groups)
 
         assert set(groups_filtered) == set(["developer", "free"])
         assert group_selected == "developer"
 
     def test_list_group_order(self):
-        x_forwarded_groups = "beiboot-api-free"
+        x_forwarded_groups = "getdeck-api-free"
         groups_filtered, group_selected = group_filter_and_selection(x_forwarded_groups=x_forwarded_groups)
 
         assert set(groups_filtered) == set(["free"])
@@ -31,7 +31,7 @@ class TestGroup:
         assert group_selected == "default"
 
     def test_list_invalid(self):
-        x_forwarded_groups = "beiboot-api-invalid"
+        x_forwarded_groups = "getdeck-api-invalid"
         groups_filtered, group_selected = group_filter_and_selection(x_forwarded_groups=x_forwarded_groups)
 
         assert set(groups_filtered) == set([])

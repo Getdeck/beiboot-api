@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-GROUP_PREFIX = "beiboot-api-"
+GROUP_PREFIX = "getdeck-api-"
 GROUP_DEFAULT = "default"
 GROUPS = ["developer", "free", GROUP_DEFAULT]  # fixed set of groups
 

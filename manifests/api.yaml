@@ -41,7 +41,7 @@ spec:
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
-                name: settings
+                name: api-settings
           resources:
             requests:
               memory: "64Mi"

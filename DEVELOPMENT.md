@@ -22,7 +22,7 @@ Assuming you have Minikube installed, please run the following on your terminal:
    Alternatively you can use k3d:
 
    ```bash
-   k3d cluster create beiboot-api --agents 1 -p 8080:80@agent:0 -p 31820:31820/UDP@agent:0
+   k3d cluster create getdeck-api --agents 1 -p 8080:80@agent:0 -p 31820:31820/UDP@agent:0
    ```
 
 2. The `kubectl` context will be set automatically to this cluster (please check it anyway)
@@ -33,7 +33,7 @@ Assuming you have Minikube installed, please run the following on your terminal:
    kubectl apply -f https://raw.githubusercontent.com/Getdeck/beiboot/main/operator/manifests/beiboot.yaml
    ```
 
-5. Store the Minikube _kubeconfig_ for later use in an application container with (working dir is _beiboot-api/app/_):
+5. Store the Minikube _kubeconfig_ for later use in an application container with (working dir is _getdeck-api/app/_):
 
    ```bash
    kubectl config view --flatten --minify > app/beiboot_api/kubeconfig.yaml
@@ -48,7 +48,7 @@ You can delete the Minikube cluster with `minikube delete`. Please find the Mini
 First you need to create a container image from the source. Please run:
 
 ```bash
-docker build app/ -t beiboot-api
+docker build app/ -t getdeck-api
 ```
 
 #### Gefyra
@@ -65,10 +65,10 @@ If used together with Minikube, please follow these steps:
 
    :exclamation: If you are using a k3d cluster, omit the `--minikube` option.
 
-2. Start a container image locally with (working dir is _beiboot-api/app/_):
+2. Start a container image locally with (working dir is _getdeck-api/app/_):
 
    ```bash
-   gefyra run -i beiboot-api -n getdeck -N beiboot-api -v $(pwd)/:/app -c "/bin/sh -c 'while sleep 1000; do :; done'" --expose localhost:8001:8000 --detach
+   gefyra run -i getdeck-api -n getdeck -N getdeck-api -v $(pwd)/:/app -c "/bin/sh -c 'while sleep 1000; do :; done'" --expose localhost:8001:8000 --detach
    ```
 
    **Important:** Please keep in mind, that you also mount the _kubeconfig.yaml_ for the Minikube cluster. It is needed to make the application able to talk to the Kubernetes API.
@@ -76,7 +76,7 @@ If used together with Minikube, please follow these steps:
 3. Confirm the presence of the _kubeconfig_ file:
 
    ```bash
-   > docker exec -it beiboot-api bash
+   > docker exec -it getdeck-api bash
    > du -h kubeconfig.yaml
    4.0K    kubeconfig.yaml
    ```
@@ -84,7 +84,7 @@ If used together with Minikube, please follow these steps:
 4. Start the fastapi process with:
 
    ```bash
-   > docker exec -it beiboot-api bash
+   > docker exec -it getdeck-api bash
    > uvicorn main:app --host 0.0.0.0 --reload
    ```
 
@@ -94,7 +94,7 @@ If used together with Minikube, please follow these steps:
 7. You can remove/restart the container with:
 
    ```bash
-   docker rm -f beiboot-api
+   docker rm -f getdeck-api
    ```
 
    (build a new container image with new dependencies and start over again)
@@ -104,13 +104,13 @@ If used together with Minikube, please follow these steps:
 Build devcontainer:
 
 ```bash
-devcontainer build --no-cache --image-name "beiboot-api:devcontainer" --workspace-folder "."
+devcontainer build --no-cache --image-name "getdeck-api:devcontainer" --workspace-folder "."
 ```
 
 Start devcontainer using gefyra run:
 
 ```bash
-gefyra run -i beiboot-api:devcontainer -n getdeck -N beiboot-api -v $(pwd):/workspace -c "/bin/sh -c 'while sleep 1000; do :; done'" --expose localhost:8000:8000
+gefyra run -i getdeck-api:devcontainer -n getdeck -N getdeck-api -v $(pwd):/workspace -c "/bin/sh -c 'while sleep 1000; do :; done'" --expose localhost:8000:8000
 ```
 
 ## Release

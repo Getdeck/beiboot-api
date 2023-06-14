@@ -1,7 +1,7 @@
 {
-  "name": "beiboot-api-client",
+  "name": "getdeck-api-client",
   "version": "0.1.4",
-  "description": "Typescript client for beiboot-api",
+  "description": "Typescript client for getdeck-api",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
