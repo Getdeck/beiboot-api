@@ -47,7 +47,7 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           flavor: latest=false
-          images: quay.io/getdeck/beiboot-api
+          images: quay.io/getdeck/getdeck-api
           tags: |
             type=raw,value=latest,enable=${{ !startsWith(github.ref, 'refs/tags/') }}
             type=raw,value={{tag}},enable=${{ startsWith(github.ref, 'refs/tags/') }}
@@ -80,7 +80,7 @@ jobs:
 
       - name: Get OpenAPI Schema
         working-directory: ./clients/typescript
-        run: docker run --user 0 quay.io/getdeck/beiboot-api:latest bash -c "python get_openapi.py && cat openapi.json" > openapi.json
+        run: docker run --user 0 quay.io/getdeck/getdeck-api:latest bash -c "python get_openapi.py && cat openapi.json" > openapi.json
 
       - uses: actions/setup-node@v3
         with:
