@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: api-group-default # api-group-<GROUP>
+  namespace: getdeck
+data:
+  USER_CLUSTER_LIMIT: "1"

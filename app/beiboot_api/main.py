@@ -4,7 +4,7 @@ import kubernetes as k8s
 from exceptions import BeibootException
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from group import group_filter_and_selection
+from group.helper import group_filter_and_selection
 from routers import clusters, configs, connections, debug
 from sentry import sentry_setup
 from sentry_sdk import capture_exception
@@ -18,12 +18,16 @@ app = FastAPI()
 
 @app.middleware("http")
 async def user_middleware(request: Request, call_next):
+    settings = get_settings()  # TODO: optimize group service settings
+
     # user
     request.state.user = request.headers.get("X-Forwarded-User", None)
 
     # groups
     x_forwarded_groups = request.headers.get("X-Forwarded-Groups", None)
-    groups_filtered, group_selected = group_filter_and_selection(x_forwarded_groups=x_forwarded_groups)
+    groups_filtered, group_selected = group_filter_and_selection(
+        x_forwarded_groups=x_forwarded_groups, settings=settings
+    )
     request.state.groups = groups_filtered
     request.state.group_selected = group_selected
 

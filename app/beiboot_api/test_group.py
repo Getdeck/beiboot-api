@@ -1,4 +1,4 @@
-from group import group_filter_and_selection
+from group.helper import group_filter_and_selection
 
 
 class TestGroup:

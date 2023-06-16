@@ -37,7 +37,9 @@ from exceptions import BeibootException
 from fastapi import APIRouter, Body, Depends, HTTPException, Request, Response, WebSocket, WebSocketDisconnect, status
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi_pagination import Page, Params, paginate
+from group.service import GroupService, get_group_service
 from headers import user_headers
+from settings import Settings, get_settings
 
 logger = logging.getLogger("uvicorn.beiboot")
 
@@ -61,11 +63,13 @@ manager = ConnectionManager()
 
 @router.get("/", response_model=Page[ClusterStateResponse])
 async def cluster_list(
-    request: Request, handler: Annotated[ClusterService, Depends(get_cluster_service)], params: Params = Depends()
+    request: Request,
+    cluster_service: Annotated[ClusterService, Depends(get_cluster_service)],
+    params: Params = Depends(),
 ) -> List[ClusterStateResponse]:
     try:
         labels = Labels(user=request.state.user)
-        beiboots = handler.list(labels=labels)
+        beiboots = cluster_service.list(labels=labels)
     except Exception as e:
         raise BeibootException(message="Beiboot Error", error=str(e))
 
@@ -78,11 +82,11 @@ async def cluster_list(
 
 @router.get("/{cluster_id}", response_model=ClusterInfoResponse)
 async def cluster_info(
-    request: Request, cluster_id: str, handler: Annotated[ClusterService, Depends(get_cluster_service)]
+    request: Request, cluster_id: str, cluster_service: Annotated[ClusterService, Depends(get_cluster_service)]
 ) -> ClusterInfoResponse:
     try:
         labels = Labels(user=request.state.user)
-        beiboot = handler.get(cluster_id=cluster_id, labels=labels)
+        beiboot = cluster_service.get(cluster_id=cluster_id, labels=labels)
     except Exception as e:
         raise BeibootException(message="Beiboot Error", error=str(e))
 
@@ -135,7 +139,8 @@ async def cluster_info(
 @router.post("/", response_model=ClusterStateResponse)
 async def cluster_create(
     request: Request,
-    handler: Annotated[ClusterService, Depends(get_cluster_service)],
+    group_service: Annotated[GroupService, Depends(get_group_service)],
+    cluster_service: Annotated[ClusterService, Depends(get_cluster_service)],
     cluster_request: ClusterRequest = Body(
         example={
             "name": "hello",
@@ -164,8 +169,21 @@ async def cluster_create(
         },
     ),
 ) -> ClusterStateResponse:
+    # validate user cluster limit
     try:
-        beiboot = handler.create(request=request, cluster_request=cluster_request)
+        labels = Labels(user=request.state.user)
+        beiboots = cluster_service.list(labels=labels)
+        beiboot_count = len(beiboots)
+    except Exception as e:
+        raise BeibootException(message="Beiboot Error", error=str(e))
+
+    group_config = group_service.get(name=request.state.group_selected)
+    if beiboot_count >= group_config.user_cluster_limit:
+        raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED, detail="User cluster limit reached.")
+
+    # create cluster
+    try:
+        beiboot = cluster_service.create(request=request, cluster_request=cluster_request)
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.errors())
     except Exception as e:
@@ -177,11 +195,11 @@ async def cluster_create(
 
 @router.delete("/{cluster_id}")
 async def cluster_delete(
-    request: Request, cluster_id: str, handler: Annotated[ClusterService, Depends(get_cluster_service)]
+    request: Request, cluster_id: str, cluster_service: Annotated[ClusterService, Depends(get_cluster_service)]
 ) -> None:
     try:
         labels = Labels(user=request.state.user)
-        handler.delete(cluster_id=cluster_id, labels=labels)
+        cluster_service.delete(cluster_id=cluster_id, labels=labels)
     except ValueError:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="cluster id unknown")
     except RuntimeWarning as e:
@@ -194,10 +212,10 @@ async def cluster_delete(
 
 @router.post("/{cluster_id}/heartbeat", response_model=ClusterStateResponse)
 async def cluster_heartbeat(
-    request: Request, cluster_id: str, handler: Annotated[ClusterService, Depends(get_cluster_service)]
+    request: Request, cluster_id: str, cluster_service: Annotated[ClusterService, Depends(get_cluster_service)]
 ) -> ClusterStateResponse:
     try:
-        beiboot = handler.get(cluster_id=cluster_id)
+        beiboot = cluster_service.get(cluster_id=cluster_id)
     except Exception as e:
         raise BeibootException(message="Beiboot Error", error=str(e))
 
@@ -215,7 +233,7 @@ async def cluster_heartbeat(
 
 @router.websocket("/{cluster_id}/heartbeat")
 async def websocket_endpoint(
-    websocket: WebSocket, cluster_id: str, handler: Annotated[ClusterService, Depends(get_cluster_service)]
+    websocket: WebSocket, cluster_id: str, cluster_service: Annotated[ClusterService, Depends(get_cluster_service)]
 ):
     x_forwarded_user = websocket.headers.get("X-Forwarded-User") or "unknown"
 
@@ -226,7 +244,7 @@ async def websocket_endpoint(
 
     try:
         labels = Labels(user=websocket.state.user)
-        beiboot = handler.get(cluster_id=cluster_id, labels=labels)
+        beiboot = cluster_service.get(cluster_id=cluster_id, labels=labels)
     except RuntimeError:
         manager.disconnect(websocket)
         raise Exception("Invalid 'cluster_id'.")
@@ -259,11 +277,11 @@ async def websocket_endpoint(
 
 @router.get("/{cluster_id}/kubeconfig")
 async def cluster_kubeconfig(
-    request: Request, cluster_id: str, handler: Annotated[ClusterService, Depends(get_cluster_service)]
+    request: Request, cluster_id: str, cluster_service: Annotated[ClusterService, Depends(get_cluster_service)]
 ):
     try:
         labels = Labels(user=request.state.user)
-        beiboot = handler.get(cluster_id=cluster_id, labels=labels)
+        beiboot = cluster_service.get(cluster_id=cluster_id, labels=labels)
     except Exception as e:
         raise BeibootException(message="Beiboot Error", error=str(e))
 

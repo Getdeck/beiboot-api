@@ -11,13 +11,18 @@ class Settings(BaseSettings, Config):
     sentry_dsn: str | None
     sentry_environment: str | None
 
-    # groups
-    group_default: str = "default"
-
     # config
     config_prefix: str = "api-config-"
     config_default_name: str = "default"
     config_default_namespace: str = "getdeck"
+
+    # group
+    group_prefix: str = "api-group-"
+    group_default_name: str = "default"
+    group_default_namespace: str = "getdeck"
+
+    # user
+    user_cluster_limit: int = 1
 
     class Config:
         env_file = ".env"
