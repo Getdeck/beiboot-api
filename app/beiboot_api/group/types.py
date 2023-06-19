@@ -6,10 +6,15 @@ logger = logging.getLogger("uvicorn.beiboot")
 
 
 class GroupConfig(BaseModel):
+    group_cluster_limit: int | None = Field(default=5)
     user_cluster_limit: int | None = Field(default=0)
 
-    @validator("user_cluster_limit")
-    def user_cluster_limit_validator(cls, v):
+    @validator("group_cluster_limit", "user_cluster_limit")
+    def positive_integer_validator(cls, v):
+        if not v:
+            return None
+
         if v < 0:
             return 0
+
         return v

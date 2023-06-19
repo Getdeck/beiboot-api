@@ -4,4 +4,5 @@ metadata:
   name: api-group-default # api-group-<GROUP>
   namespace: getdeck
 data:
+  GROUP_CLUSTER_LIMIT: "5"
   USER_CLUSTER_LIMIT: "1"

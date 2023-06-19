@@ -137,7 +137,7 @@ async def cluster_info(
 
 
 @router.post("/", response_model=ClusterStateResponse)
-async def cluster_create(
+async def cluster_create(  # noqa: C901
     request: Request,
     group_service: Annotated[GroupService, Depends(get_group_service)],
     cluster_service: Annotated[ClusterService, Depends(get_cluster_service)],
@@ -169,16 +169,42 @@ async def cluster_create(
         },
     ),
 ) -> ClusterStateResponse:
+    # validate group: TODO: move to ClusterRequest validator?
+    if not cluster_request.group:
+        group_selected = group_service.select(x_forwarded_groups=request.headers.get("x-forwarded-groups"))
+        cluster_request.group = group_selected
+
+    available_groups = group_service.available_groups()
+    if cluster_request.group not in available_groups:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid group: {cluster_request.group}. Available groups: {available_groups.join(', ')}.",
+        )
+
+    # validate group cluster limit
+    try:
+        labels = Labels(group=cluster_request.group)
+        beiboots = cluster_service.list(labels=labels)
+        beiboot_group_count = len(beiboots)
+    except Exception as e:
+        raise BeibootException(message="Beiboot Error", error=str(e))
+
+    group_config = group_service.get_config(name=cluster_request.group)
+    if not group_config.group_cluster_limit:
+        pass  # no group limit -> skip validation
+    else:
+        if beiboot_group_count >= group_config.group_cluster_limit:
+            raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED, detail="Group cluster limit reached.")
+
     # validate user cluster limit
     try:
         labels = Labels(user=request.state.user)
         beiboots = cluster_service.list(labels=labels)
-        beiboot_count = len(beiboots)
+        beiboot_user_count = len(beiboots)
     except Exception as e:
         raise BeibootException(message="Beiboot Error", error=str(e))
 
-    group_config = group_service.get(name=request.state.group_selected)
-    if beiboot_count >= group_config.user_cluster_limit:
+    if beiboot_user_count >= group_config.user_cluster_limit:
         raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED, detail="User cluster limit reached.")
 
     # create cluster

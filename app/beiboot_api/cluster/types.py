@@ -457,6 +457,7 @@ class Labels(BaseModel):
 
 class ClusterRequest(BaseModel):
     name: str
+    group: str | None
     parameters: List[Parameter] | None
     labels: Labels | None
 
