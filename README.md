@@ -56,7 +56,6 @@ Invalid group names are ignored.
 | `server_resources_limits_cpu_max`      | String | -       |                                        |                        |
 | `server_resources_limits_memory_min`   | String | -       |                                        |                        |
 | `server_resources_limits_memory_max`   | String | -       |                                        |                        |
-| `server_resources_requests_cpu_max`    | String | -       |                                        |                        |
 | `server_storage_requests_min`          | String | -       |                                        |                        |
 | `server_storage_requests_max`          | String | -       |                                        |                        |
 | `node_resources_requests_cpu_min`      | String | -       |                                        |                        |
@@ -67,7 +66,6 @@ Invalid group names are ignored.
 | `node_resources_limits_cpu_max`        | String | -       |                                        |                        |
 | `node_resources_limits_memory_min`     | String | -       |                                        |                        |
 | `node_resources_limits_memory_max`     | String | -       |                                        |                        |
-| `node_resources_requests_cpu_max`      | String | -       |                                        |                        |
 | `node_storage_requests_min`            | String | -       |                                        |                        |
 | `node_storage_requests_max`            | String | -       |                                        |                        |
 
