@@ -25,7 +25,7 @@ class GroupService:
         if type(x_forwarded_groups) == str:
             x_forwarded_groups = x_forwarded_groups.split(",")
 
-        groups_header = [group.replace(self.settings.group_prefix, "") for group in x_forwarded_groups]
+        groups_header = [group.replace(self.settings.group_role_prefix, "") for group in x_forwarded_groups]
 
         groups_available = self.available_groups()
         groups_filtered = list(set(groups_header) & set(groups_available))

@@ -20,6 +20,7 @@ class Settings(BaseSettings, Config):
     group_prefix: str = "api-group-"
     group_default_name: str = "default"
     group_default_namespace: str = "getdeck"
+    group_role_prefix: str = "api-group-"
 
     # user
     user_cluster_limit: int = 1

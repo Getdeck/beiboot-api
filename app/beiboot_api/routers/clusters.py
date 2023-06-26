@@ -39,7 +39,6 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi_pagination import Page, Params, paginate
 from group.service import GroupService, get_group_service
 from headers import user_headers
-from settings import Settings, get_settings
 
 logger = logging.getLogger("uvicorn.beiboot")
 
@@ -204,8 +203,11 @@ async def cluster_create(  # noqa: C901
     except Exception as e:
         raise BeibootException(message="Beiboot Error", error=str(e))
 
-    if beiboot_user_count >= group_config.user_cluster_limit:
-        raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED, detail="User cluster limit reached.")
+    if not group_config.user_cluster_limit:
+        pass  # no user limit -> skip validation
+    else:
+        if beiboot_user_count >= group_config.user_cluster_limit:
+            raise HTTPException(status_code=status.HTTP_402_PAYMENT_REQUIRED, detail="User cluster limit reached.")
 
     # create cluster
     try:
