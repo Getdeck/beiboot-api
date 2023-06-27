@@ -116,3 +116,41 @@ gefyra run -i getdeck-api:devcontainer -n getdeck -N getdeck-api -v $(pwd):/work
 ## Release
 
 Use `bump2version`.
+
+## Opentelemetry
+
+### Console Test
+
+```bash
+opentelemetry-instrument \
+   --traces_exporter console \
+   --metrics_exporter console \
+   --logs_exporter console \
+   uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+### Docker Collector
+
+```bash
+opentelemetry-instrument \
+   uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+docker run -p 4327:4317 \
+ -v ./tmp/otel-collector-config.yaml:/etc/otel-collector-config.yaml \
+ otel/opentelemetry-collector:latest \
+ --config=/etc/otel-collector-config.yaml
+
+### Kubernetes
+
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.12.0/cert-manager.yaml
+kubectl apply -f https://github.com/open-telemetry/opentelemetry-operator/releases/latest/download/opentelemetry-operator.yaml
+
+### Jaeger
+
+docker run --rm --name jaeger \
+ -e COLLECTOR_OTLP_ENABLED=true \
+ -p 16686:16686 \
+ -p 4317:4317 \
+ -p 4318:4318 \
+ jaegertracing/all-in-one:latest

@@ -4,7 +4,6 @@ import kubernetes as k8s
 from exceptions import BeibootException
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from group.service import GroupService
 from routers import clusters, configs, connections, debug
 from sentry import sentry_setup
 from sentry_sdk import capture_exception
@@ -14,6 +13,25 @@ logger = logging.getLogger("uvicorn.beiboot")
 
 
 app = FastAPI()
+
+
+from opentelemetry import trace
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.resources import SERVICE_NAME, Resource
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
+resource = Resource(attributes={SERVICE_NAME: "getdeck-api"})
+
+provider = TracerProvider(resource=resource)
+processor = BatchSpanProcessor(OTLPSpanExporter(endpoint="http://localhost:4327"))
+# processor = BatchSpanProcessor(OTLPSpanExporter())
+provider.add_span_processor(processor)
+trace.set_tracer_provider(provider)
+
+# Merrily go about tracing!
+
+tracer = trace.get_tracer("my.tracer.name")
 
 
 @app.middleware("http")
@@ -69,6 +87,10 @@ async def beiboot_exception_handler(request: Request, exc: BeibootException):
 
 @app.get("/")
 async def get_root():
+    with tracer.start_as_current_span("span-name"):
+        # do some work that 'span' will track
+        print("doing some work...")
+        # When the 'with' block goes out of scope, 'span' is closed for you
     return {"Beiboot": "API"}
 
 

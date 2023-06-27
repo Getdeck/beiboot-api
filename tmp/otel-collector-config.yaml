@@ -1,0 +1,30 @@
+# /tmp/otel-collector-config.yaml
+receivers:
+  otlp:
+    protocols:
+      grpc:
+      http:
+
+exporters:
+  logging:
+    verbosity: true
+
+  otlp:
+    endpoint: http://localhost:4317
+    tls:
+      insecure: true
+
+processors:
+  batch:
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      exporters: [logging, otlp]
+      processors: [batch]
+
+    metrics:
+      receivers: [otlp]
+      exporters: [logging]
+      processors: [batch]
