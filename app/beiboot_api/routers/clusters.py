@@ -74,7 +74,13 @@ async def cluster_list(
 
     response = []
     for beiboot in beiboots:
-        response.append(ClusterStateResponse(id=beiboot.name, name=beiboot.labels.get("name"), state=beiboot.state))
+        if beiboot.sunset:
+            sunset = datetime.strptime(beiboot.sunset, "%Y-%m-%dT%H:%M:%S.%fZ")
+        else:
+            sunset = None
+        response.append(
+            ClusterStateResponse(id=beiboot.name, name=beiboot.labels.get("name"), state=beiboot.state, sunset=sunset)
+        )
 
     return paginate(response, params)
 
