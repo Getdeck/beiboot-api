@@ -466,6 +466,7 @@ class ClusterStateResponse(BaseModel):
     id: str
     name: str | None
     state: BeibootState | None
+    sunset: datetime | None
 
 
 class ClusterInfoResponse(BaseModel):
