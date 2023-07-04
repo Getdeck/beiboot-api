@@ -467,6 +467,8 @@ class ClusterStateResponse(BaseModel):
     name: str | None
     state: BeibootState | None
     sunset: datetime | None
+    max_lifetime: Lifetime | None
+    max_session_timeout: SessionTimeout | None
 
 
 class ClusterInfoResponse(BaseModel):

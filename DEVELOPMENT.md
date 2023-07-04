@@ -112,7 +112,3 @@ Start devcontainer using gefyra run:
 ```bash
 gefyra run -i getdeck-api:devcontainer -n getdeck -N getdeck-api -v $(pwd):/workspace -c "/bin/sh -c 'while sleep 1000; do :; done'" --expose localhost:8000:8000
 ```
-
-## Release
-
-Use `bump2version`.
