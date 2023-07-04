@@ -78,8 +78,23 @@ async def cluster_list(
             sunset = datetime.strptime(beiboot.sunset, "%Y-%m-%dT%H:%M:%S.%fZ")
         else:
             sunset = None
+        if beiboot.parameters.maxLifetime:
+            lifetime = Lifetime(value=beiboot.parameters.maxLifetime)
+        else:
+            lifetime = None
+        if beiboot.parameters.maxSessionTimeout:
+            timeout = SessionTimeout(value=beiboot.parameters.maxSessionTimeout)
+        else:
+            timeout = None
         response.append(
-            ClusterStateResponse(id=beiboot.name, name=beiboot.labels.get("name"), state=beiboot.state, sunset=sunset)
+            ClusterStateResponse(
+                id=beiboot.name,
+                name=beiboot.labels.get("name"),
+                state=beiboot.state,
+                sunset=sunset,
+                max_lifetime=lifetime,
+                max_session_timeout=timeout,
+            )
         )
 
     return paginate(response, params)
