@@ -23,13 +23,13 @@ trio = ["trio (<0.22)"]
 
 [[package]]
 name = "beiboot"
-version = "1.4.2"
+version = "1.4.3"
 description = "Getdeck Beiboot client project."
 optional = false
 python-versions = ">=3.9,<4.0"
 files = [
-    {file = "beiboot-1.4.2-py3-none-any.whl", hash = "sha256:b4f81d513dc8572f2f21c81632356802043029dedae3d8bb63ccd55049364474"},
-    {file = "beiboot-1.4.2.tar.gz", hash = "sha256:8190ccfb2b79317dc4d3ddda5dab1427b6d7a984dd66bd3568c48a7d3e99ff56"},
+    {file = "beiboot-1.4.3-py3-none-any.whl", hash = "sha256:a78115e5ecb5a3dde3c17b69c1f5b25522f9d86e9472cf5997ea44ef40434c17"},
+    {file = "beiboot-1.4.3.tar.gz", hash = "sha256:0638b5f424400a4b757eed7ef2c78c2f668f5ed207e69599c4c57a4d1d497a23"},
 ]
 
 [package.dependencies]
@@ -1224,4 +1224,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "0422aa7ce8010591782686d601aa666fcf7fcd7da99de8fd087ea2d49b014a60"
+content-hash = "e1851000639fdeb6c2d29cfd253efe686335ab5da893edd8e370a7cecda3354d"
