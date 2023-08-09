@@ -4,7 +4,6 @@ import kubernetes as k8s
 from exceptions import BeibootException
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from group.service import GroupService
 from routers import clusters, configs, connections, debug
 from sentry import sentry_setup
 from sentry_sdk import capture_exception
