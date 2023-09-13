@@ -44,7 +44,7 @@ jobs:
 
       - name: Image Metadata
         id: image_metadata
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           flavor: latest=false
           images: quay.io/getdeck/api
