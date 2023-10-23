@@ -357,13 +357,13 @@ all = ["email-validator (>=2.0.0)", "httpx (>=0.23.0)", "itsdangerous (>=1.1.0)"
 
 [[package]]
 name = "fastapi-pagination"
-version = "0.12.10"
+version = "0.12.11"
 description = "FastAPI pagination"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "fastapi_pagination-0.12.10-py3-none-any.whl", hash = "sha256:7a2fc9c0e019722d636f540f1b02c385be76216b89b44c1b8f0571d88aea398a"},
-    {file = "fastapi_pagination-0.12.10.tar.gz", hash = "sha256:44eff56b749b85235c02fc006b736d50932f0be55628a5240cb29b04adf74a8c"},
+    {file = "fastapi_pagination-0.12.11-py3-none-any.whl", hash = "sha256:126df48f675240bcce61174cf2d58e7f338635acf25a4c21433c0d88ea178122"},
+    {file = "fastapi_pagination-0.12.11.tar.gz", hash = "sha256:d9693be07ec1a4a33c4297aca9b11e0f8c94f21e84d6da0cbd575d052b795235"},
 ]
 
 [package.dependencies]
@@ -1329,4 +1329,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "b45ecc998abb49e7129ff44f372cd492a57d1dcd2fe9d34208af676d47a2aff4"
+content-hash = "cdbf156ab5975accf93cc7eb02528cf694659599359989b25979b9610982ae70"
