@@ -82,7 +82,7 @@ jobs:
         working-directory: ./clients/typescript
         run: docker run --user 0 quay.io/getdeck/api:latest bash -c "python get_openapi.py && cat openapi.json" > openapi.json
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
           node-version: 18
 
