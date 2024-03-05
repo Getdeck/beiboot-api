@@ -357,13 +357,13 @@ all = ["email-validator (>=2.0.0)", "httpx (>=0.23.0)", "itsdangerous (>=1.1.0)"
 
 [[package]]
 name = "fastapi-pagination"
-version = "0.12.17"
+version = "0.12.18"
 description = "FastAPI pagination"
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "fastapi_pagination-0.12.17-py3-none-any.whl", hash = "sha256:4738bd7552f48f36189546ed0c4f8cfe60fa876802c10ec077a16efd751f7b00"},
-    {file = "fastapi_pagination-0.12.17.tar.gz", hash = "sha256:83fb0929f4bdfe99281b7064d25e360e09079fdac4cda5118b149b60414a3e78"},
+    {file = "fastapi_pagination-0.12.18-py3-none-any.whl", hash = "sha256:96d66f2e9babb9341977ffdad46b11a5ae36c3669e3d409a1ffca2d2b18be405"},
+    {file = "fastapi_pagination-0.12.18.tar.gz", hash = "sha256:aa0997bc0a1863799a23834ff17c9e182638e761cd3ba1fe7d06c0402ab838f6"},
 ]
 
 [package.dependencies]
@@ -372,9 +372,9 @@ pydantic = ">=1.9.1"
 typing-extensions = ">=4.8.0,<5.0.0"
 
 [package.extras]
-all = ["SQLAlchemy (>=1.3.20)", "asyncpg (>=0.24.0)", "beanie (>=1.11.9,<2.0.0)", "bunnet (>=1.1.0,<2.0.0)", "databases (>=0.6.0)", "django (<5.0.0)", "mongoengine (>=0.23.1,<0.28.0)", "motor (>=2.5.1,<4.0.0)", "orm (>=0.3.1)", "ormar (>=0.11.2)", "piccolo (>=0.89,<0.122)", "pony (>=0.7.16,<0.8.0)", "scylla-driver (>=3.25.6,<4.0.0)", "sqlakeyset (>=2.0.1680321678,<3.0.0)", "sqlmodel (>=0.0.8,<0.0.15)", "tortoise-orm (>=0.16.18,<0.21.0)"]
+all = ["SQLAlchemy (>=1.3.20)", "asyncpg (>=0.24.0)", "beanie (>=1.25.0)", "bunnet (>=1.1.0,<2.0.0)", "databases (>=0.6.0)", "django (<5.0.0)", "mongoengine (>=0.23.1,<0.28.0)", "motor (>=2.5.1,<4.0.0)", "orm (>=0.3.1)", "ormar (>=0.11.2)", "piccolo (>=0.89,<0.122)", "pony (>=0.7.16,<0.8.0)", "scylla-driver (>=3.25.6,<4.0.0)", "sqlakeyset (>=2.0.1680321678,<3.0.0)", "sqlmodel (>=0.0.8,<0.0.15)", "tortoise-orm (>=0.16.18,<0.21.0)"]
 asyncpg = ["SQLAlchemy (>=1.3.20)", "asyncpg (>=0.24.0)"]
-beanie = ["beanie (>=1.11.9,<2.0.0)"]
+beanie = ["beanie (>=1.25.0)"]
 bunnet = ["bunnet (>=1.1.0,<2.0.0)"]
 databases = ["databases (>=0.6.0)"]
 django = ["databases (>=0.6.0)", "django (<5.0.0)"]
@@ -1332,4 +1332,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "6e4759fa5df0dfa0695b8304420b8d9d34da87ecc0239dd53b29dc4497de150e"
+content-hash = "d07e3739f0e10c3759d45e76444a3c38f4c4f4c4aa7f91f4946d7b333248662c"
