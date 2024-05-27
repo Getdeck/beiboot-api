@@ -93,7 +93,7 @@ jobs:
           npm run generate-client
           npm run build
 
-      - uses: JS-DevTools/npm-publish@v2
+      - uses: JS-DevTools/npm-publish@v3
         with:
           package: ./clients/typescript/package.json
           token: ${{ secrets.NPM_TOKEN }}
